@@ -24,13 +24,12 @@ public class BidController : MonoBehaviour {
 	int bidQuantity = 1;
 	int bidDieFaceValue = 1;
 
-
-
-	// Use this for initialization
 	void Start () {
 		UpdateBidQuantityDisplay ();
 		UpdateBidDieFaceDisplay ();
 	}
+
+
 
 	public void EnterBid () {
 		if (OnEnterBid != null) {

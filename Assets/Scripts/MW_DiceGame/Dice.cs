@@ -16,14 +16,10 @@ namespace MW_DiceGame {
 		[SyncVar (hook = "OnColorChange")]
 		public Colors color;
 
-		/*[SyncVar (hook = "OnVisibilityChange")]
-		public bool visibility;*/
-
 		private Colors col;
 		private Transform diceTransform;
 		private Rigidbody rigid;
 		private bool diceThrown = false;
-
 
 
 		void Awake () {
@@ -36,10 +32,8 @@ namespace MW_DiceGame {
 			base.OnStartClient ();
 
 			GameObject go = ClientScene.FindLocalObject (diceCupId);
-			transform.SetParent (go.GetComponent<SpawnManager2> ().container.transform);
+			transform.SetParent (go.GetComponent<SpawnManager> ().container.transform);
 			OnColorChange (color);
-
-			//OnVisibilityChange (visibility);
 		}
 
 		public override void OnStartLocalPlayer () {
@@ -67,11 +61,6 @@ namespace MW_DiceGame {
 			GetComponent<MeshRenderer> ().material = color.GetDiceMaterial ();
 		}
 
-		/*void OnVisibilityChange (bool visibility) {
-			this.visibility = visibility;
-			GetComponent<MeshRenderer> ().enabled = visibility;
-		}*/
-
 		public void ResetDice () {
 			this.diceThrown = false;
 		}
@@ -90,7 +79,6 @@ namespace MW_DiceGame {
 				//Debug.Log(velocity + " - " + rigid.velocity.magnitude);
 				if (velocity == 0) {
 					dieFace = CalculateDieFace ();
-					//rigid.isKinematic = true;
 					diceThrown = true;
 				}
 			}

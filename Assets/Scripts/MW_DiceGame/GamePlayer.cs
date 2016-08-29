@@ -28,8 +28,6 @@ namespace MW_DiceGame {
 
 
 
-
-
 		public override void OnStartClient () {
 			base.OnStartClient ();
 			Debug.Log ("playerName=" + playerName);
@@ -59,10 +57,6 @@ namespace MW_DiceGame {
 
 
 
-
-
-
-
 		void PutInContainer (string containerName, GameObject child) {
 			var container = GameObject.Find (containerName);
 			if (container == null) {
@@ -88,8 +82,6 @@ namespace MW_DiceGame {
 
 			SetActionStrategy (new CallOutBluff ());
 			HandleAction ();
-
-			//diceCup.CmdFillDiceCupWithDices ();
 		}
 
 		void OnDeclareBidSpotOn () {
@@ -97,8 +89,6 @@ namespace MW_DiceGame {
 
 			SetActionStrategy (new DeclareBidSpotOn ());
 			HandleAction ();
-
-			//diceCup.CmdDecreaseAvailableDices ();
 		}
 
 		void HandleAction () {
