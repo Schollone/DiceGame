@@ -73,4 +73,10 @@ public class PlayerInfo : MonoBehaviour {
 		}
 	}
 
+	void OnDestroy () {
+		GamePlayer.PlayerNameChangedEvent -= OnPlayerNameChanged;
+		GamePlayer.ColorChangedEvent -= OnColorChanged;
+		DiceCup.AvailableDicesChangedEvent -= OnAvailableDicesChanged;
+	}
+
 }
