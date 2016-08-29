@@ -7,6 +7,9 @@ namespace MW_DiceGame {
 
 	public class DiceCup : NetworkBehaviour {
 
+		public GamePlayer gamePlayer;
+		public SpawnManager2 spawnManager;
+
 		public static readonly int maxDices = 5;
 
 		public delegate void AvailableDicesDelegate (Slots targetSlot, int dicesLeft);
@@ -27,19 +30,17 @@ namespace MW_DiceGame {
 		[SerializeField]
 		Rect rect2;
 
-		SpawnManager spawnManager;
-
 		GameObject lookBtn;
 		GameObject hideBtn;
 
-		GamePlayer gamePlayer;
+		//SpawnManager spawnManager;
 
 		int[] dices = new int[maxDices];
 
 
 
 		void Awake () {
-			spawnManager = GetComponent<SpawnManager> ();
+			
 		}
 
 		public override void OnStartClient () {
@@ -47,7 +48,6 @@ namespace MW_DiceGame {
 			base.OnStartClient ();
 
 			//spawnManager = GetComponent<SpawnManager> ();
-			gamePlayer = GetComponent<GamePlayer> ();
 
 			rect1 = rect2 = new Rect ();
 
@@ -102,13 +102,18 @@ namespace MW_DiceGame {
 			if (availableDices > 0) {
 				availableDices = availableDices - 1;
 
-				GameObject go = spawnManager.diceContainer.transform.GetChild (0).gameObject;
+				//Debug.LogWarning ("Spawn DiceContainer: " + spawnManager.diceContainer.name);
+
+				GameObject go = spawnManager.container.transform.GetChild (0).gameObject;
 
 				//GameObject go = spawnManager.dices.GetItem (0).dice;
 				//GameObject go = spawnManager.pool [availableDices];
 
+
+				Debug.Log ("DecreaseDice: " + go);
 				spawnManager.UnSpawnHandler (go);
 				NetworkServer.UnSpawn (go);
+				//NetworkServer.Destroy (go);
 
 				//if (OnLostDice != null) {
 				//OnLoseDice ();
@@ -121,10 +126,57 @@ namespace MW_DiceGame {
 
 		[Command]
 		public void CmdFillDiceCupWithDices () {
-			spawnManager.UnspawnAllObjects ();
+
+			//Dice[] diceArray = spawnManager.pool.ToArray ();
+
+			GameObject diceContainer = GameObject.Find (gamePlayer.playerName);
+
 
 			for (int i = 0; i < availableDices; i++) {
-				var diceGO = spawnManager.GetFromPool (diceSpawnPoint.position);
+				Transform diceGO = diceContainer.transform.GetChild (i);
+				Dice dice = diceGO.GetComponent<Dice> ();
+				//Dice dice = diceArray [i];
+				dice.ResetDice ();
+
+				diceGO.position = diceSpawnPoint.position;
+
+				float angle = Random.Range (72 - 30, 72 + 30);
+				diceSpawnPoint.Rotate (Vector3.up, angle, Space.World);
+
+				diceGO.transform.rotation = Random.rotation;
+				diceGO.GetComponent<Rigidbody> ().AddForce (diceSpawnPoint.up * speed * Time.deltaTime, ForceMode.Impulse);
+			}
+
+
+
+
+			//SpawnManager spawnManager = GetComponent<SpawnManager> ();
+
+			//spawnManager.UnspawnAllObjects ();
+			//string folderName = gamePlayer.playerName;
+
+			//GameObject diceContainer = GameObject.Find (folderName);
+			/*if (diceContainer != null) {
+				for (int i = 0; i < diceContainer.transform.childCount; i++) {
+					GameObject diceGO = diceContainer.transform.GetChild (i).gameObject;
+					NetworkServer.UnSpawn (diceGO);
+				}
+			}*/
+
+
+
+			//Debug.LogWarning ("Spawn DiceContainer: " + spawnManager.diceContainer.name);
+
+
+			/*for (int i = 0; i < availableDices; i++) {
+				//GameObject diceGO = spawnManager.GetFromPool (diceSpawnPoint.position);
+				GameObject diceGO = (GameObject)Instantiate (prefab, Vector3.zero, Quaternion.identity);
+				diceGO.transform.position = diceSpawnPoint.position;
+
+				diceGO.name = "Dice_" + folderName + "_" + i;
+				//diceGO.GetComponent<MeshRenderer> ().enabled = false;
+
+				PutInDiceContainer (diceGO, folderName);
 
 				Dice dice = diceGO.GetComponent<Dice> ();
 				dice.diceCupId = netId;
@@ -136,11 +188,18 @@ namespace MW_DiceGame {
 				diceGO.transform.rotation = Random.rotation;
 				diceGO.GetComponent<Rigidbody> ().AddForce (diceSpawnPoint.up * speed * Time.deltaTime, ForceMode.Impulse);
 
-				NetworkServer.Spawn (diceGO, spawnManager.assetId);
-			}
+				//NetworkServer.Spawn (diceGO, spawnManager.assetId); // spawn on all clients
+				NetworkServer.Spawn (diceGO);
+			}*/
 		}
 
-
+		/*private void PutInDiceContainer (GameObject dice, string folderName) {
+			GameObject diceContainer = GameObject.Find (folderName);
+			if (diceContainer == null) {
+				diceContainer = new GameObject (folderName);
+			}
+			dice.transform.parent = diceContainer.transform;
+		}*/
 
 
 
@@ -198,7 +257,7 @@ namespace MW_DiceGame {
 
 			rect1 = new Rect (150, gamePlayer.slotId.GetIndex () * 20 + 100, 320, 100);
 			rect2 = new Rect (20, GetComponent<GamePlayer> ().slotId.GetIndex () * 20 + 100, 300, 100);
-			//dices = spawnManager.GetDiceValues ();
+			dices = spawnManager.GetDiceValues ();
 		}
 
 	}
