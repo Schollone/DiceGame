@@ -6,11 +6,26 @@ using System;
 namespace MW_DiceGame {
 
 	[System.Serializable]
-	public struct Bid : IComparable<Bid> {
+	public struct Bid {
+
+		public enum BidResult {
+			Null,
+			NoBluff,
+			SpotOn,
+			Bluff
+		}
 
 		public DieFaces dieFace;
 		public int quantity;
 		public NetworkInstanceId ownerId;
+
+		public const int maxBidQuantity = 20;
+		public const int minBidQuantity = 1;
+
+		public const int maxBidDieFaceValue = 6;
+		public const int minBidDieFaceValue = 1;
+
+
 
 		public Bid (DieFaces dieFace, int quantity) {
 			this.dieFace = dieFace;
@@ -28,9 +43,86 @@ namespace MW_DiceGame {
 			return string.Format ("Quantity: {0}, DieFace: {1}, OwnerId: {2}", quantity, dieFace, ownerId);
 		}
 
-		#region IComparable implementation
+		BidResult CheckIfWithin (Bid realBidOnTable) {
+			Debug.Log ("this Quantity: " + this.quantity);
+			if (this.quantity > maxBidQuantity || this.quantity < minBidQuantity) {
+				Debug.LogError ("Bid is not in limits");
+				return BidResult.Null;
+			}
 
-		int IComparable<Bid>.CompareTo (Bid other) {
+			if (realBidOnTable.Equals (null)) {
+				Debug.LogError ("Parameter bid is null");
+				return BidResult.Null;
+			}
+				
+			if (this.dieFace.GetIndex () == realBidOnTable.dieFace.GetIndex ()) {
+				if (this.quantity < realBidOnTable.quantity) {
+					Debug.Log ("No Bluff");
+					return BidResult.NoBluff;
+				} else if (this.quantity == realBidOnTable.quantity) {
+					Debug.Log ("SpotOn");
+					return BidResult.SpotOn;
+				} else {
+					Debug.Log ("Bluff");
+					return BidResult.Bluff;
+				}
+			} else {
+				Debug.LogError ("Bids not comparable");
+			}
+
+			return BidResult.Null;
+		}
+
+		public bool CanBeReplacedWith (Bid newBid) {
+			if (newBid.quantity > maxBidQuantity || newBid.quantity < minBidQuantity) {
+				return false;
+			}
+
+			if (newBid.dieFace == DieFaces.Null) {
+				return false;
+			}
+
+			if (newBid.quantity >= this.quantity) {
+				if (newBid.dieFace.GetIndex () > this.dieFace.GetIndex ()) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool IsBluff (Bid realBidOnTable) {
+			BidResult bidResult = CheckIfWithin (realBidOnTable);
+
+			switch (bidResult) {
+				case BidResult.Bluff:
+				case BidResult.SpotOn:
+					{
+						return true;
+					}
+				default:
+					{
+						return false;
+					}
+			}
+		}
+
+		public bool IsSpotOn (Bid realBidOnTable) {
+			BidResult bidResult = CheckIfWithin (realBidOnTable);
+
+			switch (bidResult) {
+				case BidResult.SpotOn:
+					{
+						return true;
+					}
+				default:
+					{
+						return false;
+					}
+			}
+		}
+
+		/*public int IComparable<Bid>.CompareTo (Bid other) {
 			if (other.Equals (null))
 				return 1;
 
@@ -47,9 +139,7 @@ namespace MW_DiceGame {
 			} else {
 				return 1;
 			}
-		}
-
-		#endregion
+		}*/
 	}
 
 }

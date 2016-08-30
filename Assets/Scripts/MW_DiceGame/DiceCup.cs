@@ -77,19 +77,26 @@ namespace MW_DiceGame {
 			}
 
 			if (Input.GetKeyUp (KeyCode.L)) {
-				CmdDecreaseAvailableDices ();
+				CmdDecreaseDiceFromPlayer ();
 			}
 
 			if (Input.GetKeyUp (KeyCode.F)) {
 				CmdFillDiceCupWithDices ();
 			}
+
+			if (Input.GetKeyUp (KeyCode.B)) {
+				CmdBeginGame ();
+			}
+		}
+
+		[Command]
+		public void CmdBeginGame () {
+			
 		}
 
 
-
-
 		[Command]
-		public void CmdDecreaseAvailableDices () {
+		public void CmdDecreaseDiceFromPlayer () {
 			if (availableDices > 0) {
 				availableDices = availableDices - 1;
 

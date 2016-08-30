@@ -75,6 +75,20 @@ namespace MW_DiceGame {
 			}
 		}
 
+		public DieFaces[] GetDieFacesFromPlayer () {
+			int count = container.transform.childCount;
+			DieFaces[] result = new DieFaces[count];
+
+			for (int i = 0; i < count; i++) {
+				Transform diceGO = container.transform.GetChild (i);
+
+				Dice dice = diceGO.GetComponent<Dice> ();
+				result [i] = dice.dieFace;
+			}
+
+			return result;
+		}
+
 
 		public int[] GetDiceValues () {
 			int count = container.transform.childCount;

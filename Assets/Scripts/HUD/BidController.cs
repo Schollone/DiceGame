@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 using System;
 using System.Collections;
 using MW_DiceGame;
@@ -15,11 +16,7 @@ public class BidController : MonoBehaviour {
 	public Image BidDieFaceImage;
 
 
-	const int maxBidQuantity = 20;
-	const int minBidQuantity = 1;
 
-	const int maxBidDieFaceValue = 6;
-	const int minBidDieFaceValue = 1;
 
 	int bidQuantity = 1;
 	int bidDieFaceValue = 1;
@@ -32,15 +29,36 @@ public class BidController : MonoBehaviour {
 
 
 	public void EnterBid () {
-		if (OnEnterBid != null) {
-			Bid bid = new Bid ((DieFaces)Enum.ToObject (typeof(DieFaces), bidDieFaceValue), bidQuantity);
+		Debug.Log ("EnterBid");
+		SendEnterBidAction ();
+
+		/*if (OnEnterBid != null) {
 			OnEnterBid (bid);
-		}
+		}*/
 
 	}
 
+	void SendEnterBidAction () {
+		NetworkClient client = Lobby.singleton.client;
+		if (client == null || !client.isConnected) {
+			return;
+		}
+
+		var msg = new ActionMessage ();
+		Bid bid = new Bid ((DieFaces)Enum.ToObject (typeof(DieFaces), bidDieFaceValue), bidQuantity);
+		msg.bid = bid;
+		msg.connectionId = client.connection.connectionId;
+		client.Send (ActionMsg.EnterBid, msg);
+	}
+
+
+
+
+
+
+
 	public void IncreaseBidQuantity () {
-		if (bidQuantity + 1 > maxBidQuantity) {
+		if (bidQuantity + 1 > Bid.maxBidQuantity) {
 			return;
 		}
 		bidQuantity++;
@@ -48,7 +66,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	public void DecreaseBidQuantity () {
-		if (bidQuantity - 1 < minBidQuantity) {
+		if (bidQuantity - 1 < Bid.minBidQuantity) {
 			return;
 		}
 		bidQuantity--;
@@ -56,7 +74,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	public void IncreaseBidDieFace () {
-		if (bidDieFaceValue + 1 > maxBidDieFaceValue) {
+		if (bidDieFaceValue + 1 > Bid.maxBidDieFaceValue) {
 			return;
 		}
 		bidDieFaceValue++;
@@ -64,7 +82,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	public void DecreaseBidDieFace () {
-		if (bidDieFaceValue - 1 < minBidDieFaceValue) {
+		if (bidDieFaceValue - 1 < Bid.minBidDieFaceValue) {
 			return;
 		}
 		bidDieFaceValue--;

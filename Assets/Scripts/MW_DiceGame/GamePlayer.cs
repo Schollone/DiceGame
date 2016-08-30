@@ -12,7 +12,7 @@ namespace MW_DiceGame {
 		public Colors color;
 		[SyncVar]
 		public Slots slotId;
-		[SyncVar]
+		[SyncVar (hook = "OnIsMyTurn")]
 		public bool isMyTurn;
 
 		public Camera cam;
@@ -21,8 +21,11 @@ namespace MW_DiceGame {
 
 		public delegate void ColorDelegate (Slots targetSlot, Colors newColor);
 
+		public delegate void ControlsDelegate (bool show);
+
 		public static event PlayerNameDelegate PlayerNameChangedEvent;
 		public static event ColorDelegate ColorChangedEvent;
+		public static event ControlsDelegate ShowControlsEvent;
 
 		IAction actionStrategy;
 
@@ -40,6 +43,8 @@ namespace MW_DiceGame {
 			if (ColorChangedEvent != null) {
 				ColorChangedEvent (slotId, color);
 			}
+
+			OnIsMyTurn (isMyTurn);
 		}
 
 		public override void OnStartLocalPlayer () {
@@ -54,8 +59,17 @@ namespace MW_DiceGame {
 			cam.gameObject.SetActive (true);
 		}
 
+		public void OnIsMyTurn (bool isMyTurn) {
+			this.isMyTurn = isMyTurn;
 
-
+			if (!isLocalPlayer) {
+				return;
+			}
+				
+			if (ShowControlsEvent != null) {
+				ShowControlsEvent (isMyTurn);
+			}
+		}
 
 		void PutInContainer (string containerName, GameObject child) {
 			var container = GameObject.Find (containerName);
@@ -104,6 +118,13 @@ namespace MW_DiceGame {
 
 		public override string ToString () {
 			return string.Format ("[GamePlayer: playerName={0}, color={1}, slot={2}, isMyTurn={3}]", playerName, color, slotId, isMyTurn);
+		}
+
+
+		[Command]
+		public void CmdItIsYourTurn (bool isMyTurn) {
+			Debug.Log ("It is your turn: " + isMyTurn);
+			this.isMyTurn = isMyTurn;
 		}
 	}
 
