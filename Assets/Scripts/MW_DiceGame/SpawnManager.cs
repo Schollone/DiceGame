@@ -21,9 +21,19 @@ namespace MW_DiceGame {
 		public delegate void UnSpawnDelegate (GameObject spawned);
 
 
+		public override void OnStartServer () {
+			base.OnStartServer ();
+			Debug.LogWarning ("OnStartServer -- SpawnManager foldername = " + gamePlayer.playerName);
+
+			/*string folderName = gamePlayer.playerName;
+			container = GetContainer (folderName);
+
+			CmdSpawnDices ();*/
+		}
+
 		public override void OnStartClient () {
 			base.OnStartClient ();
-
+			Debug.Log ("OnStartClient -- SpawnManager");
 			string folderName = gamePlayer.playerName;
 			container = GetContainer (folderName);
 
@@ -35,7 +45,11 @@ namespace MW_DiceGame {
 			base.OnStartLocalPlayer ();
 
 			CmdSpawnDices ();
+			if (!isServer) {
+				SendClientReady (ActionMsg.ClientReady);
+			}
 		}
+
 
 		GameObject SpawnHandler (Vector3 position, NetworkHash128 assedId) {
 			return GetDice ();
@@ -73,6 +87,17 @@ namespace MW_DiceGame {
 				var diceGO = GetDice ();
 				NetworkServer.Spawn (diceGO);
 			}
+		}
+
+		void SendClientReady (short action) {
+			NetworkClient client = Lobby.singleton.client;
+			if (client == null || !client.isConnected) {
+				return;
+			}
+
+			var msg = new ActionMessage ();
+			msg.connectionId = client.connection.connectionId;
+			client.Send (action, msg);
 		}
 
 		public DieFaces[] GetDieFacesFromPlayer () {

@@ -44,7 +44,7 @@ namespace MW_DiceGame {
 				ColorChangedEvent (slotId, color);
 			}
 
-			OnIsMyTurn (isMyTurn);
+			//OnIsMyTurn (isMyTurn);
 		}
 
 		public override void OnStartLocalPlayer () {

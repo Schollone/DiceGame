@@ -47,7 +47,7 @@ namespace MW_DiceGame {
 		void OnDieFaceChange (DieFaces dieFace) {
 			this.dieFace = dieFace;
 
-			Debug.LogWarning ("Dice - OnDieFaceChange: " + dieFace);
+			//Debug.LogWarning ("Dice - OnDieFaceChange: " + dieFace);
 
 			diceThrown = false;
 

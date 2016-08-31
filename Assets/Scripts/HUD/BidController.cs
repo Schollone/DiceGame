@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
+using UnityEngine.Networking.NetworkSystem;
 using System;
 using System.Collections;
 using MW_DiceGame;
@@ -16,7 +17,8 @@ public class BidController : MonoBehaviour {
 	public Image BidDieFaceImage;
 
 
-
+	int minQuantity = Bid.minBidQuantity;
+	int minDieFaceValue = Bid.minBidDieFaceValue;
 
 	int bidQuantity = 1;
 	int bidDieFaceValue = 1;
@@ -24,8 +26,21 @@ public class BidController : MonoBehaviour {
 	void Start () {
 		UpdateBidQuantityDisplay ();
 		UpdateBidDieFaceDisplay ();
+
+		Debug.Log ("BidController - Start");
+		NetworkClient client = Lobby.singleton.client;
+		client.RegisterHandler (ActionMsg.EnterBid, OnBidEntered);
 	}
 
+	void OnBidEntered (NetworkMessage netMsg) {
+		Debug.Log ("BitController ___ OnBidEntered");
+		var msg = netMsg.ReadMessage<ActionMessage> ();
+		this.bidQuantity = msg.bid.quantity;
+		this.bidDieFaceValue = msg.bid.dieFace.GetIndex ();
+
+		UpdateBidQuantityDisplay ();
+		UpdateBidDieFaceDisplay ();
+	}
 
 
 	public void EnterBid () {
@@ -66,7 +81,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	public void DecreaseBidQuantity () {
-		if (bidQuantity - 1 < Bid.minBidQuantity) {
+		if (bidQuantity - 1 < minQuantity) {
 			return;
 		}
 		bidQuantity--;
@@ -82,7 +97,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	public void DecreaseBidDieFace () {
-		if (bidDieFaceValue - 1 < Bid.minBidDieFaceValue) {
+		if (bidDieFaceValue - 1 < minDieFaceValue) {
 			return;
 		}
 		bidDieFaceValue--;

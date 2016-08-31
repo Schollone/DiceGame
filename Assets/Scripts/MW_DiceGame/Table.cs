@@ -31,6 +31,7 @@ namespace MW_DiceGame {
 		IState gameState;
 		int playerIndex = 0;
 		IDictionary<DieFaces, int> dieFaceMap;
+		int clientsReady = 1;
 
 		void OnBidChange (Bid bid) {
 			Debug.Log ("Table - OnBidChange: " + bid);
@@ -55,12 +56,17 @@ namespace MW_DiceGame {
 		public override void OnStartServer () {
 			base.OnStartServer ();
 
+			NetworkServer.RegisterHandler (ActionMsg.ClientReady, OnClientReady);
 			NetworkServer.RegisterHandler (ActionMsg.EnterBid, OnEnterBid);
 			NetworkServer.RegisterHandler (ActionMsg.CallOutBluff, OnCallOutBluff);
 			NetworkServer.RegisterHandler (ActionMsg.DeclareBidSpotOn, OnDeclareBidSpotOn);
 
 			SetGameState (new Preparation (this));
-			StartGame ();
+
+			if (players.childCount == 1) {
+				Debug.Log ("Only Host is ready to fill up dice cups");
+				StartGame ();
+			}
 		}
 
 		public override void OnStartClient () {
@@ -91,7 +97,7 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void StartGame () {
-			Debug.Log ("StartGame");
+			Debug.LogWarning ("StartGame");
 			this.gameState.StartGame ();
 		}
 
@@ -129,9 +135,11 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void ThrowDices () {
+			Debug.Log ("ThrowDices " + players.childCount);
 			for (int i = 0; i < players.childCount; i++) {
 				Transform player = players.GetChild (i);
 				player.GetComponent<DiceCup> ().CmdFillDiceCupWithDices ();
+				//player.GetComponent<DiceCup> ().RpcFillDiceCupWithDices ();
 			}
 		}
 
@@ -163,6 +171,30 @@ namespace MW_DiceGame {
 		}
 
 
+		[Server]
+		void OnClientReady (NetworkMessage netMsg) {
+			var msg = netMsg.ReadMessage<ActionMessage> ();
+			Debug.Log ("Server Table - OnClientReady " + msg);
+
+			for (int i = 0; i < players.childCount; i++) {
+				var player = players.GetChild (i);
+				GamePlayer gamePlayer = player.GetComponent<GamePlayer> ();
+				int connectionId = gamePlayer.connectionToClient.connectionId;
+
+				if (connectionId == msg.connectionId) {
+					this.clientsReady++;
+					break;
+				}
+			}
+
+			Debug.Log ("clientsReady=" + clientsReady + " von insgesamt " + players.childCount + " Clients.");
+			if (this.clientsReady == players.childCount) {
+				Debug.Log ("Alle Clients are ready to fill up dice cups");
+				//Invoke ("StartGame", 3f);// StartGame ();
+				StartGame ();
+			}
+
+		}
 
 		[Server]
 		void OnEnterBid (NetworkMessage netMsg) {
@@ -173,9 +205,13 @@ namespace MW_DiceGame {
 				if (BidAlreadyExists ()) {
 					if (this.currentBid.CanBeReplacedWith (msg.bid)) {
 						this.currentBid = msg.bid;
+						Debug.Log ("SendToAll new Bid");
+						NetworkServer.SendToAll (ActionMsg.EnterBid, msg);
 					}
 				} else {
 					this.currentBid = msg.bid;
+					Debug.Log ("SendToAll new Bid");
+					NetworkServer.SendToAll (ActionMsg.EnterBid, msg);
 				}
 
 				NextPlayer ();
@@ -310,7 +346,7 @@ namespace MW_DiceGame {
 				Transform player = players.GetChild (i);
 
 				DiceCup diceCup = player.GetComponent<DiceCup> ();
-				diceCup.LookUpDices ();
+				diceCup.RpcLookUpDices ();
 			}
 		}
 

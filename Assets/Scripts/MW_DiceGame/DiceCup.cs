@@ -84,14 +84,6 @@ namespace MW_DiceGame {
 				CmdFillDiceCupWithDices ();
 			}
 
-			if (Input.GetKeyUp (KeyCode.B)) {
-				CmdBeginGame ();
-			}
-		}
-
-		[Command]
-		public void CmdBeginGame () {
-			
 		}
 
 
@@ -111,18 +103,22 @@ namespace MW_DiceGame {
 				//OnLoseDice ();
 				//}
 
-			} else {
-				// eliminate Player;
+				if (availableDices <= 0) {
+					Debug.Log ("Eliminate Player");
+				}
+
 			}
 		}
 
 		[Command]
 		public void CmdFillDiceCupWithDices () {
 
-			GameObject diceContainer = GameObject.Find (gamePlayer.playerName);
+			//GameObject diceContainer = GameObject.Find (gamePlayer.playerName);
+			GameObject diceContainer = spawnManager.container;
 
-
+			Debug.Log ("Fill DiceCup: availableDices=" + availableDices);
 			for (int i = 0; i < availableDices; i++) {
+				
 				Transform diceGO = diceContainer.transform.GetChild (i);
 				Dice dice = diceGO.GetComponent<Dice> ();
 				dice.ResetDice ();
@@ -138,6 +134,16 @@ namespace MW_DiceGame {
 
 		}
 
+		[ClientRpc]
+		public void RpcLookUpDices () {
+			Debug.LogFormat ("RPC : Look Up all Dices");
+			if (!isLocalPlayer) {
+				return;
+			}
+			lookBtn.SetActive (false);
+			hideBtn.SetActive (true);
+			anim.SetBool ("looking", true);
+		}
 
 		public void LookUpDices () {
 			Debug.LogFormat ("Look Up Dices");
@@ -190,8 +196,8 @@ namespace MW_DiceGame {
 		public void UpdateDieFaceValueDisplay () {
 			Debug.Log ("UpdateDieFaceValueDisplay()");
 
-			rect1 = new Rect (150, gamePlayer.slotId.GetIndex () * 20 + 100, 320, 100);
-			rect2 = new Rect (20, GetComponent<GamePlayer> ().slotId.GetIndex () * 20 + 100, 300, 100);
+			rect1 = new Rect (150, gamePlayer.slotId.GetIndex () * 30 + 100, 320, 100);
+			rect2 = new Rect (20, gamePlayer.slotId.GetIndex () * 30 + 100, 300, 100);
 			dices = spawnManager.GetDiceValues ();
 		}
 
