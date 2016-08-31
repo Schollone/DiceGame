@@ -39,6 +39,10 @@ namespace MW_DiceGame {
 			this.ownerId = ownerId;
 		}
 
+		public bool Exists () {
+			return (this.dieFace != DieFaces.Null);
+		}
+
 		public override string ToString () {
 			return string.Format ("Quantity: {0}, DieFace: {1}, OwnerId: {2}", quantity, dieFace, ownerId);
 		}

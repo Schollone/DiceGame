@@ -50,7 +50,7 @@ namespace MW_DiceGame {
 		public override void OnStartLocalPlayer () {
 			base.OnStartLocalPlayer ();
 
-			BidController.OnEnterBid += OnEnterBid;
+			//BidController.OnEnterBid += OnEnterBid;
 			EventManager.OnCallOutBluff += OnCallOutBluff;
 			EventManager.OnDeclareSpotOn += OnDeclareBidSpotOn;
 
@@ -83,13 +83,13 @@ namespace MW_DiceGame {
 			actionStrategy = strategy;
 		}
 
-		void OnEnterBid (Bid bidData) {
+		/*void OnEnterBid (Bid bidData) {
 			Bid bid = new Bid (bidData.dieFace, bidData.quantity, this.netId);
 			Debug.LogFormat ("Enter Bid {0}", bid);
 
 			SetActionStrategy (new EnterBid (bid));
 			HandleAction ();
-		}
+		}*/
 
 		void OnCallOutBluff () {
 			Debug.LogFormat ("Call Out Bluff");
