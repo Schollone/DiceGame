@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 73395a2de6d8ed54cbc3f0748d02b638
+timeCreated: 1472727042
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Cynical Hills
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 5ca002bca94719e468e225dd1df4b744, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

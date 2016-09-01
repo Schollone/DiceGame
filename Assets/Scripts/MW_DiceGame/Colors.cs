@@ -5,12 +5,14 @@ using System.Collections;
 namespace MW_DiceGame {
 
 	public enum Colors {
-		Black,
+		Yellow,
 		Blue,
-		Green,
 		Red,
+		Green,
+		Purple,
+		Black,
 		White,
-		Yellow
+		Empty
 	}
 
 	static class ColorMethods {
@@ -19,9 +21,11 @@ namespace MW_DiceGame {
 				case Colors.Black:
 					return UnityEngine.Color.black;
 				case Colors.Blue:
-					return UnityEngine.Color.blue;
+					return new Color (0f, 0.5f, 1f);
 				case Colors.Green:
 					return new Color (0f, 0.68f, 0.11f);
+				case Colors.Purple:
+					return UnityEngine.Color.magenta;
 				case Colors.Red:
 					return new Color (0.68f, 0f, 0f);
 				case Colors.White:
@@ -29,7 +33,7 @@ namespace MW_DiceGame {
 				case Colors.Yellow:
 					return UnityEngine.Color.yellow;
 				default:
-					return UnityEngine.Color.magenta;
+					return UnityEngine.Color.grey;
 			}
 		}
 
@@ -38,13 +42,13 @@ namespace MW_DiceGame {
 		}
 
 		public static Sprite GetDieFaceImage (this Colors color, int number = 5) {
-			string path = "DieFaces/Dice_" + color.ToString () + "_" + number.ToString ();
+			string path = "DieFaces/Dirty/Dice_" + color.ToString () + "_" + number.ToString ();
 			Sprite sprite = Resources.Load<Sprite> (path);
 			return sprite;
 		}
 
 		public static Sprite GetDieFaceImage2 (Colors color, int number = 5) {
-			string path = "DieFaces/Dice_" + color.ToString () + "_" + number.ToString ();
+			string path = "DieFaces/Dirty/Dice_" + color.ToString () + "_" + number.ToString ();
 			Sprite sprite = Resources.Load<Sprite> (path);
 			return sprite;
 		}
@@ -54,7 +58,7 @@ namespace MW_DiceGame {
 		}
 
 		public static int Length () {
-			return Enum.GetValues (typeof(Colors)).Length;
+			return Enum.GetValues (typeof(Colors)).Length - 1;
 		}
 
 		public static Colors Parse (int colorIndex) {

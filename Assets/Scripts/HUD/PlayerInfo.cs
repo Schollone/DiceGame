@@ -8,6 +8,7 @@ public class PlayerInfo : MonoBehaviour {
 
 	public Text playerNameText;
 	public Image diceQuantityAsDieFace;
+	public Outline outline;
 	public Slots slot;
 
 	Colors color = Colors.Black;
@@ -39,6 +40,10 @@ public class PlayerInfo : MonoBehaviour {
 		if (slot == targetSlot) {
 			this.color = newColor;
 			playerNameText.color = color.GetColor ();
+			Debug.LogWarning ("OnColorChanged: " + newColor + " -> " + (newColor.Equals (Colors.Black)));
+			if (newColor.Equals (Colors.Black)) {
+				outline.effectColor = new Color (1f, 1f, 1f, 0.5f);
+			}
 
 			Sprite dieFace = color.GetDieFaceImage (dicesLeft);
 			diceQuantityAsDieFace.sprite = dieFace;

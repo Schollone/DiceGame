@@ -25,7 +25,7 @@ public class EventManager : MonoBehaviour {
 		}
 	}
 
-	public void DeclareSpotOn () {
+	public void DeclareBidSpotOn () {
 		SendAction (ActionMsg.EnterBid);
 		//SendDeclareBidSpotOnAction ();
 		//if (OnDeclareSpotOn != null) {
@@ -41,7 +41,7 @@ public class EventManager : MonoBehaviour {
 		//}
 	}
 
-	public void BackToMenu () {
+	public void Pause () {
 		NetworkClient client = Lobby.singleton.client;
 		if (client == null || !client.isConnected) {
 			return;
@@ -51,7 +51,7 @@ public class EventManager : MonoBehaviour {
 		client.Send (MsgType.LobbyReturnToLobby, msg);
 	}
 
-	void SendAction (short action) {
+	public void SendAction (short action) {
 		NetworkClient client = Lobby.singleton.client;
 		if (client == null || !client.isConnected) {
 			return;

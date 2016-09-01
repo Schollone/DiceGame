@@ -17,15 +17,27 @@ public class BidController : MonoBehaviour {
 	public Image BidDieFaceImage;
 
 	public Button increaseQuantityButton;
+	public Text increaseQuantityText;
 	public Button decreaseQuantityButton;
+	public Text decreaseQuantityText;
 	public Button increaseDieFaceButton;
+	public Text increaseDieFaceText;
 	public Button decreaseDieFaceButton;
+	public Text decreaseDieFaceText;
 
 	int bidQuantity = 1;
 	int bidDieFaceValue = 1;
 
+	Color transparentColor = new Color (0f, 0f, 0f, 0.5f);
+	Color visibleColor = new Color (0f, 0f, 0f, 1f);
+
 	void Awake () {
 		GamePlayer.ShowControlsEvent += OnShowControls;
+		//GamePlayer.HideControlsEvent += OnHideControls;
+		//increaseQuantityTextColor = increaseQuantityButton.transform.GetChild (0).GetComponent<Text> ().color;
+		//decreaseQuantityTextColor = decreaseQuantityButton.transform.GetChild (0).GetComponent<Text> ().color;
+		//increaseDieFaceTextColor = increaseDieFaceButton.transform.GetChild (0).GetComponent<Text> ().color;
+		//decreaseDieFaceTextColor = decreaseDieFaceButton.transform.GetChild (0).GetComponent<Text> ().color;
 	}
 
 	void Start () {
@@ -42,7 +54,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	void OnShowControls (bool show) {
-		Debug.Log ("BidController: OnShowControls - " + show);
+		Debug.Log ("BidController: OnShowControls " + show);
 
 		if (show) {
 			UpdateInteractableButtons ();
@@ -52,6 +64,7 @@ public class BidController : MonoBehaviour {
 			increaseDieFaceButton.interactable = false;
 			decreaseDieFaceButton.interactable = false;
 		}
+
 	}
 
 	public void IncreaseBidQuantity () {
@@ -146,6 +159,8 @@ public class BidController : MonoBehaviour {
 	void UpdateButtonsIfCurrentBidExists (Bid currentBid) {
 		if (bidQuantity == currentBid.quantity) {
 			this.decreaseQuantityButton.interactable = false;
+			Color color = new Color ();
+			this.decreaseQuantityText.color = transparentColor;
 
 			UpdateDecreaseDieFaceBtn (currentBid.dieFace.GetIndex ());
 			UpdateIncreaseDieFaceBtn ();
@@ -153,6 +168,7 @@ public class BidController : MonoBehaviour {
 
 		} else if (bidQuantity > currentBid.quantity) {
 			this.decreaseQuantityButton.interactable = true;
+			this.decreaseQuantityText.color = visibleColor;
 
 			UpdateDecreaseDieFaceBtn (Bid.minBidDieFaceValue);
 			UpdateIncreaseDieFaceBtn ();
@@ -173,32 +189,40 @@ public class BidController : MonoBehaviour {
 		Debug.Log ("bidQuantity == Bid.minBidQuantity: " + bidQuantity + " == " + Bid.minBidQuantity);
 		if (bidQuantity == Bid.minBidQuantity) {
 			this.decreaseQuantityButton.interactable = false;
+			this.decreaseQuantityText.color = transparentColor;
 		} else {
 			this.decreaseQuantityButton.interactable = true;
+			this.decreaseQuantityText.color = visibleColor;
 		}
 	}
 
 	void UpdateDecreaseDieFaceBtn (int lowestComparativeValue) {
 		if (bidDieFaceValue == lowestComparativeValue) {
 			this.decreaseDieFaceButton.interactable = false;
+			this.decreaseDieFaceText.color = transparentColor;
 		} else {
 			this.decreaseDieFaceButton.interactable = true;
+			this.decreaseDieFaceText.color = visibleColor;
 		}
 	}
 
 	void UpdateIncreaseDieFaceBtn () {
 		if (bidDieFaceValue == Bid.maxBidDieFaceValue) {
 			this.increaseDieFaceButton.interactable = false;
+			this.increaseDieFaceText.color = transparentColor;
 		} else {
 			this.increaseDieFaceButton.interactable = true;
+			this.increaseDieFaceText.color = visibleColor;
 		}
 	}
 
 	void UpdateIncreaseQuantityBtn () {
 		if (bidQuantity == Bid.maxBidQuantity) {
 			this.increaseQuantityButton.interactable = false;
+			this.increaseQuantityText.color = transparentColor;
 		} else {
 			this.increaseQuantityButton.interactable = true;
+			this.increaseQuantityText.color = visibleColor;
 		}
 	}
 
@@ -218,7 +242,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	void DisplayBidDieFace () {
-		Sprite sprite = Colors.White.GetDieFaceImage (bidDieFaceValue);
+		Sprite sprite = Colors.Empty.GetDieFaceImage (bidDieFaceValue);
 		BidDieFaceImage.sprite = sprite;
 	}
 }

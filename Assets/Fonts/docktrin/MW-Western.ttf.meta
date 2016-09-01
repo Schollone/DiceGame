@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: cf0ccf722195052498db12550f476370
+timeCreated: 1472768529
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Docktrin
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: bce794838b0a338449fdea37b95cf28a, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

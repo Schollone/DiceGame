@@ -150,9 +150,12 @@ namespace MW_DiceGame {
 			if (!isLocalPlayer) {
 				return;
 			}
-			lookBtn.SetActive (false);
-			hideBtn.SetActive (true);
-			anim.SetBool ("looking", true);
+
+			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
+				lookBtn.SetActive (false);
+				hideBtn.SetActive (true);
+				anim.SetBool ("looking", true);
+			}
 		}
 
 		public void HideDices () {
@@ -160,9 +163,12 @@ namespace MW_DiceGame {
 			if (!isLocalPlayer) {
 				return;
 			}
-			lookBtn.SetActive (true);
-			hideBtn.SetActive (false);
-			anim.SetBool ("looking", false);
+
+			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
+				lookBtn.SetActive (true);
+				hideBtn.SetActive (false);
+				anim.SetBool ("looking", false);
+			}
 		}
 
 		void OnDestroy () {

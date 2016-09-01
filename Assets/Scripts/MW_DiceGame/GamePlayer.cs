@@ -21,11 +21,15 @@ namespace MW_DiceGame {
 
 		public delegate void ColorDelegate (Slots targetSlot, Colors newColor);
 
-		public delegate void ControlsDelegate (bool show);
+		public delegate void ButtonControlsDelegate (bool isMyTurn);
 
 		public static event PlayerNameDelegate PlayerNameChangedEvent;
 		public static event ColorDelegate ColorChangedEvent;
-		public static event ControlsDelegate ShowControlsEvent;
+
+		public static event ButtonControlsDelegate ShowControlsEvent;
+		//public static event ButtonControlsDelegate HideControlsEvent;
+		public static event ButtonControlsDelegate ActiveControlsEvent;
+		//public static event ButtonControlsDelegate PassiveControlsEvent;
 
 		IAction actionStrategy;
 
@@ -65,10 +69,19 @@ namespace MW_DiceGame {
 			if (!isLocalPlayer) {
 				return;
 			}
-				
-			if (ShowControlsEvent != null) {
-				ShowControlsEvent (isMyTurn);
+
+			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
+				if (ActiveControlsEvent != null) {
+					Debug.Log ("ActiveControlsEvent: " + isMyTurn);
+					ActiveControlsEvent (isMyTurn);
+				}
+			} else {
+				if (ShowControlsEvent != null) {
+					Debug.Log ("ShowControlsEvent: " + isMyTurn);
+					ShowControlsEvent (isMyTurn);
+				}
 			}
+
 		}
 
 		void PutInContainer (string containerName, GameObject child) {

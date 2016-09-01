@@ -17,7 +17,7 @@ namespace MW_DiceGame {
 	static class DieFaceMethods {
 		public static Sprite GetDieFaceImage (this DieFaces dieFace) {
 			int diceValue = (int)dieFace;
-			string path = "DieFaces/Dice_White_" + diceValue.ToString ();
+			string path = "DieFaces/Dirty/Dice_White_" + diceValue.ToString ();
 			Sprite sprite = Resources.Load<Sprite> (path);
 			return sprite;
 		}
