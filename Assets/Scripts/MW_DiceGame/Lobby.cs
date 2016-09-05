@@ -1,16 +1,20 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
+using Prototype.NetworkLobby;
 
 namespace MW_DiceGame {
 
-	public class Lobby : NetworkLobbyManager {
+	public class Lobby : LobbyHook {
 
-		public override GameObject OnLobbyServerCreateGamePlayer (NetworkConnection conn, short playerControllerId) {
+		public override GameObject OnLobbyServerCreateGamePlayer (NetworkManager manager, NetworkConnection conn, short playerControllerId) {
 			Debug.Log ("Lobby - OnLobbyServerCreateGamePlayer");
+			var lobbyManager = manager as LobbyManager;
 
-			Transform startPos = GetStartPosition ();
-			Transform[] startPosArray = startPositions.ToArray ();
+			Transform startPos = lobbyManager.GetStartPosition ();
+			Transform[] startPosArray = lobbyManager.startPositions.ToArray ();
 
 			for (int i = 0; i < startPosArray.Length; i++) {
 				startPos = startPosArray [i];
@@ -23,16 +27,16 @@ namespace MW_DiceGame {
 				}
 			}
 				
-			GameObject go = (GameObject)Instantiate (gamePlayerPrefab, startPos.position, startPos.rotation);
+			GameObject go = (GameObject)Instantiate (lobbyManager.gamePlayerPrefab, startPos.position, startPos.rotation);
 
 			return go;
 		}
 
-		public override bool OnLobbyServerSceneLoadedForPlayer (GameObject lobbyPlayer, GameObject gamePlayer) {
+		public override bool OnLobbyServerSceneLoadedForPlayer (NetworkManager manager, GameObject lobbyPlayer, GameObject gamePlayer) {
 
 			Debug.Log ("OnLobbyServerSceneLoadedForPlayer");
 
-			LobbyPlayer lp = lobbyPlayer.GetComponent<LobbyPlayer> ();
+			Prototype.NetworkLobby.LobbyPlayer lp = lobbyPlayer.GetComponent<Prototype.NetworkLobby.LobbyPlayer> ();
 			GamePlayer gp = gamePlayer.GetComponent<GamePlayer> ();
 
 			gp.slotId = lp.slotId;

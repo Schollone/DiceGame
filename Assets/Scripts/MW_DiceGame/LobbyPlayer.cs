@@ -3,6 +3,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using Prototype.NetworkLobby;
 
 namespace MW_DiceGame {
 
@@ -65,7 +66,7 @@ namespace MW_DiceGame {
 			if (!ShowLobbyGUI)
 				return;
 
-			var lobby = Lobby.singleton as Lobby;
+			var lobby = LobbyManager.singleton as LobbyManager;
 			if (lobby) {
 				if (!lobby.showLobbyGUI)
 					return;

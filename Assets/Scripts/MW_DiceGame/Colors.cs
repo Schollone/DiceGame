@@ -16,6 +16,9 @@ namespace MW_DiceGame {
 	}
 
 	static class ColorMethods {
+		public static Color visibleDarkBrownColor = new Color (131.0f / 255.0f, 67.0f / 255.0f, 32.0f / 255.0f, 1f);
+		public static Color transparentBlackColor = new Color (0f, 0f, 0f, 0.5f);
+
 		public static UnityEngine.Color GetColor (this Colors color) {
 			switch (color) {
 				case Colors.Black:

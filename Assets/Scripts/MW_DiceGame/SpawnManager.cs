@@ -2,6 +2,7 @@
 using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
+using Prototype.NetworkLobby;
 
 namespace MW_DiceGame {
 
@@ -90,7 +91,7 @@ namespace MW_DiceGame {
 		}
 
 		void SendClientReady (short action) {
-			NetworkClient client = Lobby.singleton.client;
+			NetworkClient client = LobbyManager.singleton.client;
 			if (client == null || !client.isConnected) {
 				return;
 			}

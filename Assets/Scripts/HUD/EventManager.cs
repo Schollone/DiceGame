@@ -3,6 +3,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using System;
 using MW_DiceGame;
+using Prototype.NetworkLobby;
 
 public class EventManager : MonoBehaviour {
 
@@ -42,7 +43,7 @@ public class EventManager : MonoBehaviour {
 	}
 
 	public void Pause () {
-		NetworkClient client = Lobby.singleton.client;
+		NetworkClient client = LobbyManager.singleton.client;
 		if (client == null || !client.isConnected) {
 			return;
 		}
@@ -51,8 +52,18 @@ public class EventManager : MonoBehaviour {
 		client.Send (MsgType.LobbyReturnToLobby, msg);
 	}
 
+	public void OpenPauseMenu () {
+		var pausemenu = GameObject.Find ("PauseMenu");
+		pausemenu.GetComponent<Canvas> ().enabled = true;
+	}
+
+	public void ResumeGame () {
+		var pausemenu = GameObject.Find ("PauseMenu");
+		pausemenu.GetComponent<Canvas> ().enabled = false;
+	}
+
 	public void SendAction (short action) {
-		NetworkClient client = Lobby.singleton.client;
+		NetworkClient client = LobbyManager.singleton.client;
 		if (client == null || !client.isConnected) {
 			return;
 		}

@@ -5,6 +5,7 @@ using UnityEngine.Networking.NetworkSystem;
 using System;
 using System.Collections;
 using MW_DiceGame;
+using Prototype.NetworkLobby;
 
 public class BidController : MonoBehaviour {
 
@@ -28,8 +29,8 @@ public class BidController : MonoBehaviour {
 	int bidQuantity = 1;
 	int bidDieFaceValue = 1;
 
-	Color transparentColor = new Color (0f, 0f, 0f, 0.5f);
-	Color visibleColor = new Color (0f, 0f, 0f, 1f);
+	//static Color visibleColor = new Color (131.0f / 255.0f, 67.0f / 255.0f, 32.0f / 255.0f, 1f);
+	//static Color transparentColor = new Color (0f, 0f, 0f, 0.5f);
 
 	void Awake () {
 		GamePlayer.ShowControlsEvent += OnShowControls;
@@ -42,7 +43,7 @@ public class BidController : MonoBehaviour {
 
 	void Start () {
 		Debug.Log ("BidController - Start");
-		NetworkClient client = Lobby.singleton.client;
+		NetworkClient client = LobbyManager.singleton.client;
 		client.RegisterHandler (ActionMsg.EnterBid, OnBidEntered);
 
 		bidQuantity = 1;
@@ -119,7 +120,7 @@ public class BidController : MonoBehaviour {
 
 
 	void SendEnterBidAction () {
-		NetworkClient client = Lobby.singleton.client;
+		NetworkClient client = LobbyManager.singleton.client;
 		if (client == null || !client.isConnected) {
 			return;
 		}
@@ -160,7 +161,7 @@ public class BidController : MonoBehaviour {
 		if (bidQuantity == currentBid.quantity) {
 			this.decreaseQuantityButton.interactable = false;
 			Color color = new Color ();
-			this.decreaseQuantityText.color = transparentColor;
+			this.decreaseQuantityText.color = ColorMethods.transparentBlackColor;
 
 			UpdateDecreaseDieFaceBtn (currentBid.dieFace.GetIndex ());
 			UpdateIncreaseDieFaceBtn ();
@@ -168,7 +169,7 @@ public class BidController : MonoBehaviour {
 
 		} else if (bidQuantity > currentBid.quantity) {
 			this.decreaseQuantityButton.interactable = true;
-			this.decreaseQuantityText.color = visibleColor;
+			this.decreaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
 
 			UpdateDecreaseDieFaceBtn (Bid.minBidDieFaceValue);
 			UpdateIncreaseDieFaceBtn ();
@@ -189,40 +190,40 @@ public class BidController : MonoBehaviour {
 		Debug.Log ("bidQuantity == Bid.minBidQuantity: " + bidQuantity + " == " + Bid.minBidQuantity);
 		if (bidQuantity == Bid.minBidQuantity) {
 			this.decreaseQuantityButton.interactable = false;
-			this.decreaseQuantityText.color = transparentColor;
+			this.decreaseQuantityText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.decreaseQuantityButton.interactable = true;
-			this.decreaseQuantityText.color = visibleColor;
+			this.decreaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
 	void UpdateDecreaseDieFaceBtn (int lowestComparativeValue) {
 		if (bidDieFaceValue == lowestComparativeValue) {
 			this.decreaseDieFaceButton.interactable = false;
-			this.decreaseDieFaceText.color = transparentColor;
+			this.decreaseDieFaceText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.decreaseDieFaceButton.interactable = true;
-			this.decreaseDieFaceText.color = visibleColor;
+			this.decreaseDieFaceText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
 	void UpdateIncreaseDieFaceBtn () {
 		if (bidDieFaceValue == Bid.maxBidDieFaceValue) {
 			this.increaseDieFaceButton.interactable = false;
-			this.increaseDieFaceText.color = transparentColor;
+			this.increaseDieFaceText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.increaseDieFaceButton.interactable = true;
-			this.increaseDieFaceText.color = visibleColor;
+			this.increaseDieFaceText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
 	void UpdateIncreaseQuantityBtn () {
 		if (bidQuantity == Bid.maxBidQuantity) {
 			this.increaseQuantityButton.interactable = false;
-			this.increaseQuantityText.color = transparentColor;
+			this.increaseQuantityText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.increaseQuantityButton.interactable = true;
-			this.increaseQuantityText.color = visibleColor;
+			this.increaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
