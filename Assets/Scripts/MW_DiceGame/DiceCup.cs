@@ -20,7 +20,7 @@ namespace MW_DiceGame {
 		public int availableDices;
 
 		public Animator anim;
-		public Transform diceSpawnPoint;
+		public GameObject diceSpawnPoints;
 		public float speed = 60f;
 		public string LookButtonName = "lookButtonName";
 		public string HideButtonName = "hideButtonName";
@@ -34,6 +34,7 @@ namespace MW_DiceGame {
 		GameObject hideBtn;
 
 		int[] dices = new int[maxDices];
+		Transform[] spawnPoints;
 
 
 		public override void OnStartClient () {
@@ -58,6 +59,11 @@ namespace MW_DiceGame {
 
 			EventManager.OnLook += LookUpDices;
 			EventManager.OnHide += HideDices;
+
+			spawnPoints = new Transform[maxDices];
+			for (int i = 0; i < spawnPoints.Length; i++) {
+				spawnPoints [i] = diceSpawnPoints.transform.GetChild (i);
+			}
 		}
 
 		void OnAvailableDicesChanged (int availableDices) {
@@ -119,19 +125,23 @@ namespace MW_DiceGame {
 			Debug.Log ("Fill DiceCup: availableDices=" + availableDices);
 			for (int i = 0; i < availableDices; i++) {
 				
-				Transform diceGO = diceContainer.transform.GetChild (i);
-				Dice dice = diceGO.GetComponent<Dice> ();
-				dice.ResetDice ();
-
-				diceGO.position = diceSpawnPoint.position;
-
-				float angle = Random.Range (72 - 30, 72 + 30);
-				diceSpawnPoint.Rotate (Vector3.up, angle, Space.World);
-
-				diceGO.transform.rotation = Random.rotation;
-				diceGO.GetComponent<Rigidbody> ().AddForce (diceSpawnPoint.up * speed * Time.deltaTime, ForceMode.Impulse);
+				ThrowDice (diceContainer, i);
 			}
 
+		}
+
+		void ThrowDice (GameObject diceContainer, int i) {
+			Transform diceGO = diceContainer.transform.GetChild (i);
+			Dice dice = diceGO.GetComponent<Dice> ();
+			dice.ResetDice ();
+
+			diceGO.position = spawnPoints [i].position;
+
+			float angle = Random.Range (72 - 30, 72 + 30);
+			//spawnPoints [i].Rotate (Vector3.up, angle, Space.World);
+			Debug.Log ("Rotation: " + spawnPoints [i].rotation.ToString ());
+			diceGO.transform.rotation = Random.rotation;
+			//diceGO.GetComponent<Rigidbody> ().AddForce (diceSpawnPoints.up * speed * Time.deltaTime, ForceMode.Impulse);
 		}
 
 		[ClientRpc]
@@ -177,9 +187,13 @@ namespace MW_DiceGame {
 		}
 
 		void OnGUI () {
+			GUIStyle s = new GUIStyle ();
+			s.fontSize = 30;
+			s.fontStyle = FontStyle.Bold;
+			s.normal.textColor = Color.white;
 
 			GUI.color = Color.white;
-			GUI.Label (rect1, gamePlayer.ToString () + " -> Dices: " + availableDices.ToString ());
+			GUI.Label (rect1, gamePlayer.ToString () + " -> Dices: " + availableDices.ToString (), s);
 
 			if (dices.Length == 0) {
 				return;
@@ -187,23 +201,23 @@ namespace MW_DiceGame {
 
 			Rect tmpRect = rect2;
 
-			GUI.Label (tmpRect, dices [0].ToString ());
-			tmpRect.x += 20;
-			GUI.Label (tmpRect, dices [1].ToString ());
-			tmpRect.x += 20;
-			GUI.Label (tmpRect, dices [2].ToString ());
-			tmpRect.x += 20;
-			GUI.Label (tmpRect, dices [3].ToString ());
-			tmpRect.x += 20;
-			GUI.Label (tmpRect, dices [4].ToString ());
+			GUI.Label (tmpRect, dices [0].ToString (), s);
+			tmpRect.x += 40;
+			GUI.Label (tmpRect, dices [1].ToString (), s);
+			tmpRect.x += 40;
+			GUI.Label (tmpRect, dices [2].ToString (), s);
+			tmpRect.x += 40;
+			GUI.Label (tmpRect, dices [3].ToString (), s);
+			tmpRect.x += 40;
+			GUI.Label (tmpRect, dices [4].ToString (), s);
 
 		}
 
 		public void UpdateDieFaceValueDisplay () {
-			Debug.Log ("UpdateDieFaceValueDisplay()");
+			//Debug.Log ("UpdateDieFaceValueDisplay()");
 
-			rect1 = new Rect (150, gamePlayer.slotId.GetIndex () * 30 + 100, 320, 100);
-			rect2 = new Rect (20, gamePlayer.slotId.GetIndex () * 30 + 100, 300, 100);
+			rect1 = new Rect (250, gamePlayer.slotId.GetIndex () * 30 + 200, 320, 100);
+			rect2 = new Rect (20, gamePlayer.slotId.GetIndex () * 30 + 200, 300, 100);
 			dices = spawnManager.GetDiceValues ();
 		}
 
