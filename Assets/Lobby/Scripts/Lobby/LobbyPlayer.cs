@@ -112,6 +112,7 @@ namespace Prototype.NetworkLobby {
 			//ChangeReadyButtonColor (JoinColor);
 
 			readyButton.transform.GetChild (0).GetComponent<Text> ().text = "JOIN";
+			readyButton.gameObject.SetActive (true);
 			readyButton.interactable = true;
 
 			//have to use child count of player prefab already setup as "this.slot" is not set yet
@@ -167,6 +168,9 @@ namespace Prototype.NetworkLobby {
 
 				Text textComponent = readyButton.transform.GetChild (0).GetComponent<Text> ();
 				textComponent.text = isLocalPlayer ? "JOIN" : "...";
+				if (isLocalPlayer) {
+					readyButton.gameObject.SetActive (true);
+				}
 				//textComponent.color = Color.white;
 				readyButton.interactable = isLocalPlayer;
 				colorButton.interactable = isLocalPlayer;
@@ -197,7 +201,7 @@ namespace Prototype.NetworkLobby {
 		}*/
 
 		void LoadDieFace (Colors color) {
-			Sprite sprite = color.GetDieFaceImage (LobbyManager.s_Singleton._playerNumber);
+			Sprite sprite = color.GetDieFaceImage (slotId.GetIndex () + 1);
 			colorButton.GetComponent<Image> ().sprite = sprite;
 		}
 

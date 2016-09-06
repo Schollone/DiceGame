@@ -2,9 +2,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
+using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.Networking.Types;
 using UnityEngine.Networking.Match;
 using System.Collections;
+
+#if UNITY_EDITOR
+using UnityEditor.SceneManagement;
+#endif
 
 
 namespace Prototype.NetworkLobby {
@@ -23,7 +28,9 @@ namespace Prototype.NetworkLobby {
 		public LobbyTopPanel topPanel;
 
 		public RectTransform mainMenuPanel;
+		public RectTransform multiplayerPanel;
 		public RectTransform lobbyPanel;
+		public RectTransform pausePanel;
 
 		public LobbyInfoPanel infoPanel;
 		public LobbyCountdownPanel countdownPanel;
@@ -31,6 +38,7 @@ namespace Prototype.NetworkLobby {
 
 		protected RectTransform currentPanel;
 
+		public Button backToMenuButton;
 		public Button backButton;
 
 		public Text statusInfo;
@@ -57,6 +65,7 @@ namespace Prototype.NetworkLobby {
 			currentPanel = mainMenuPanel;
 
 			backButton.gameObject.SetActive (false);
+			backToMenuButton.gameObject.SetActive (false);
 			GetComponent<Canvas> ().enabled = true;
 
 			DontDestroyOnLoad (gameObject);
@@ -82,7 +91,7 @@ namespace Prototype.NetworkLobby {
 						}
 					}
 				} else {
-					ChangeTo (mainMenuPanel);
+					ChangeTo (multiplayerPanel);
 				}
 
 				topPanel.ToggleVisibility (true);
@@ -107,14 +116,20 @@ namespace Prototype.NetworkLobby {
 				newPanel.gameObject.SetActive (true);
 			}
 
+			Debug.Log ("new Panel: " + newPanel);
 			currentPanel = newPanel;
 
-			if (currentPanel != mainMenuPanel) {
-				backButton.gameObject.SetActive (true);
-			} else {
+			if (currentPanel == mainMenuPanel) {
 				backButton.gameObject.SetActive (false);
+				backToMenuButton.gameObject.SetActive (false);
+			} else if (currentPanel == multiplayerPanel) {
+				backButton.gameObject.SetActive (false);
+				backToMenuButton.gameObject.SetActive (true);
 				SetServerInfo ("Offline", "None");
 				_isMatchmaking = false;
+			} else if (currentPanel != multiplayerPanel) {
+				backButton.gameObject.SetActive (true);
+				backToMenuButton.gameObject.SetActive (false);
 			}
 		}
 
@@ -150,8 +165,12 @@ namespace Prototype.NetworkLobby {
 			player.RemovePlayer ();
 		}
 
-		public void SimpleBackClbk () {
+		public void MenuBackClbk () {
 			ChangeTo (mainMenuPanel);
+		}
+
+		public void SimpleBackClbk () {
+			ChangeTo (multiplayerPanel);
 		}
 
 		public void StopHostClbk () {
@@ -163,7 +182,7 @@ namespace Prototype.NetworkLobby {
 			}
 
             
-			ChangeTo (mainMenuPanel);
+			ChangeTo (multiplayerPanel);
 		}
 
 		public void StopClientClbk () {
@@ -173,12 +192,12 @@ namespace Prototype.NetworkLobby {
 				StopMatchMaker ();
 			}
 
-			ChangeTo (mainMenuPanel);
+			ChangeTo (multiplayerPanel);
 		}
 
 		public void StopServerClbk () {
 			StopServer ();
-			ChangeTo (mainMenuPanel);
+			ChangeTo (multiplayerPanel);
 		}
 
 		class KickMsg : MessageBase {
@@ -359,12 +378,40 @@ namespace Prototype.NetworkLobby {
 
 		public override void OnClientDisconnect (NetworkConnection conn) {
 			base.OnClientDisconnect (conn);
-			ChangeTo (mainMenuPanel);
+			ChangeTo (multiplayerPanel);
 		}
 
 		public override void OnClientError (NetworkConnection conn, int errorCode) {
-			ChangeTo (mainMenuPanel);
+			ChangeTo (multiplayerPanel);
 			infoPanel.Display ("Cient error : " + (errorCode == 6 ? "timeout" : errorCode.ToString ()), "Close", null);
+		}
+
+
+
+
+
+
+
+		public void OpenMultiplayerScreen () {
+			ChangeTo (multiplayerPanel);
+		}
+
+
+		public void ExitGame () {
+			#if UNITY_EDITOR
+			UnityEditor.EditorApplication.isPlaying = false;
+			#else
+			Application.Quit();
+			#endif
+		}
+
+		public void Leave () {
+			ResumeGame ();
+			backDelegate ();
+		}
+
+		public void ResumeGame () {
+			pausePanel.gameObject.SetActive (false);
 		}
 	}
 }

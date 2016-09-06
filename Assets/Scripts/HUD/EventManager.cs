@@ -42,24 +42,10 @@ public class EventManager : MonoBehaviour {
 		//}
 	}
 
-	public void Pause () {
-		NetworkClient client = LobbyManager.singleton.client;
-		if (client == null || !client.isConnected) {
-			return;
-		}
-
-		var msg = new EmptyMessage ();
-		client.Send (MsgType.LobbyReturnToLobby, msg);
-	}
-
 	public void OpenPauseMenu () {
-		var pausemenu = GameObject.Find ("PauseMenu");
-		pausemenu.GetComponent<Canvas> ().enabled = true;
-	}
-
-	public void ResumeGame () {
-		var pausemenu = GameObject.Find ("PauseMenu");
-		pausemenu.GetComponent<Canvas> ().enabled = false;
+		var lobby = LobbyManager.singleton as LobbyManager;
+		lobby.pausePanel.gameObject.SetActive (true);
+		//pausemenu.GetComponent<Canvas> ().enabled = true;
 	}
 
 	public void SendAction (short action) {
