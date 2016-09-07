@@ -2,7 +2,7 @@
 using System.Collections;
 using MW_DiceGame;
 
-public class GameOver : IState {
+public class GameOver : AbstractState {
 
 	Table table;
 
@@ -12,23 +12,9 @@ public class GameOver : IState {
 	}
 
 
-	#region IState implementation
-
-	public void StartGame () {
+	public override void Execute () {
+		
 	}
 
-	public void NextPlayer () {
-	}
-
-	public void EnterEvaluationPhase () {
-	}
-
-	public void EnterBidding () {
-	}
-
-	public void LeaveGame () {
-	}
-
-	#endregion
 }
 

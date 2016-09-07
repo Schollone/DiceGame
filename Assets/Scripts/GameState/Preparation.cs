@@ -2,41 +2,27 @@
 using System.Collections;
 using MW_DiceGame;
 
-public class Preparation : IState {
+public class Preparation : AbstractState {
 
 	Table table;
 
 	public Preparation (Table table) {
 		Debug.Log ("Preparation");
 		this.table = table;
-
-		this.table.InitPlayers ();
 	}
 
+	public override void Execute () {
+//		this.table.InitPlayers ();
 
-	#region IState implementation
-
-	public void StartGame () {
-
-		table.ThrowDices (); // add callback for when all dices are thrown
-
-		//table.CountDicesOnTable ();
-
-		table.SetGameState (new Bidding (table));
+		if (table.players.childCount == 1) {
+			Debug.Log ("Only Host is ready to fill up dice cups");
+			table.StartGame ();
+		}
 	}
 
-	public void NextPlayer () {
+	public override void StartGame () {
+		table.SetGameState (new Bidding (table, action));
 	}
 
-	public void EnterEvaluationPhase () {
-	}
-
-	public void EnterBidding () {
-	}
-
-	public void LeaveGame () {
-	}
-
-	#endregion
 }
 

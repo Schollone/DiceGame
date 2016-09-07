@@ -11,8 +11,8 @@ public class EventManager : MonoBehaviour {
 
 	public static event ClickAction OnLook;
 	public static event ClickAction OnHide;
-	public static event ClickAction OnDeclareSpotOn;
-	public static event ClickAction OnCallOutBluff;
+	//public static event ClickAction OnDeclareSpotOn;
+	//public static event ClickAction OnCallOutBluff;
 
 	public void Look () {
 		if (OnLook != null) {
@@ -27,7 +27,7 @@ public class EventManager : MonoBehaviour {
 	}
 
 	public void DeclareBidSpotOn () {
-		SendAction (ActionMsg.EnterBid);
+		SendAction (ActionMsg.DeclareBidSpotOn);
 		//SendDeclareBidSpotOnAction ();
 		//if (OnDeclareSpotOn != null) {
 		//	OnDeclareSpotOn ();

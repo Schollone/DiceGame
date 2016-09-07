@@ -33,7 +33,10 @@ public class BidController : MonoBehaviour {
 	//static Color transparentColor = new Color (0f, 0f, 0f, 0.5f);
 
 	void Awake () {
-		GamePlayer.ShowControlsEvent += OnShowControls;
+		Table.UnlockControlsEvent += OnUnlockControls;
+		Table.LockControlsEvent += OnLockControls;
+		Table.BidDoesNotExistEvent += OnBidDoesNotExist;
+		GamePlayer.ItIsMyTurnEvent += OnIsMyTurn;
 		//GamePlayer.HideControlsEvent += OnHideControls;
 		//increaseQuantityTextColor = increaseQuantityButton.transform.GetChild (0).GetComponent<Text> ().color;
 		//decreaseQuantityTextColor = decreaseQuantityButton.transform.GetChild (0).GetComponent<Text> ().color;
@@ -54,19 +57,44 @@ public class BidController : MonoBehaviour {
 		UpdateInteractableButtons ();
 	}
 
-	void OnShowControls (bool show) {
-		Debug.Log ("BidController: OnShowControls " + show);
 
-		if (show) {
+
+	void OnUnlockControls () {
+		//UpdateInteractableButtons ();
+	}
+
+	void OnLockControls () {
+		LockBidButtons ();
+	}
+
+	void OnBidDoesNotExist (bool isMyTurn) {
+		UpdateInteractableButtons ();
+		bidQuantity = 1;
+		bidDieFaceValue = 1;
+		DisplayBidQuantity ();
+		DisplayBidDieFace ();
+	}
+
+	void OnIsMyTurn (bool isMyTurn) {
+		Debug.Log ("BidController: OnIsMyTurn " + isMyTurn);
+
+		if (isMyTurn) {
 			UpdateInteractableButtons ();
 		} else {
-			increaseQuantityButton.interactable = false;
-			decreaseQuantityButton.interactable = false;
-			increaseDieFaceButton.interactable = false;
-			decreaseDieFaceButton.interactable = false;
+			LockBidButtons ();
 		}
 
 	}
+
+	void LockBidButtons () {
+		increaseQuantityButton.interactable = false;
+		decreaseQuantityButton.interactable = false;
+		increaseDieFaceButton.interactable = false;
+		decreaseDieFaceButton.interactable = false;
+	}
+
+
+
 
 	public void IncreaseBidQuantity () {
 		if (bidQuantity + 1 > Bid.maxBidQuantity) {
@@ -245,5 +273,13 @@ public class BidController : MonoBehaviour {
 	void DisplayBidDieFace () {
 		Sprite sprite = Colors.Empty.GetDieFaceImage (bidDieFaceValue);
 		BidDieFaceImage.sprite = sprite;
+	}
+
+
+	void OnDestroy () {
+		Table.UnlockControlsEvent -= OnUnlockControls;
+		Table.LockControlsEvent -= OnLockControls;
+		Table.BidDoesNotExistEvent -= OnBidDoesNotExist;
+		GamePlayer.ItIsMyTurnEvent -= OnIsMyTurn;
 	}
 }

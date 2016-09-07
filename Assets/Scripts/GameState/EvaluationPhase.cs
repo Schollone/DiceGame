@@ -2,35 +2,33 @@
 using System.Collections;
 using MW_DiceGame;
 
-public class EvaluationPhase : IState {
+public class EvaluationPhase : AbstractState {
 
 	Table table;
 
-	public EvaluationPhase (Table table) {
+	public EvaluationPhase (Table table, IAction action) {
 		Debug.Log ("EvaluationPhase");
 		this.table = table;
+		this.action = action;
 	}
 
 
-	#region IState implementation
+	public override void Execute () {
+		// Disable Control Buttons
 
-	public void StartGame () {
+
+		table.CountDicesOnTable ();
+		table.LookUpAllDices ();
+
+		action.ExecuteAction (table);
 	}
 
-	public void NextPlayer () {
+	public override void EnterBidding () {
+		table.SetGameState (new Bidding (table, action));
 	}
 
-	public void EnterEvaluationPhase () {
-	}
-
-	public void EnterBidding () {
-		table.SetGameState (new Bidding (table));
-	}
-
-	public void LeaveGame () {
+	public override void LeaveGame () {
 		table.SetGameState (new GameOver (table));
 	}
 
-	#endregion
 }
-

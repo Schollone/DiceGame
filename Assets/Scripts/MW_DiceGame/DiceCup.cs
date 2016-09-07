@@ -152,7 +152,8 @@ namespace MW_DiceGame {
 			}
 			lookBtn.SetActive (false);
 			hideBtn.SetActive (true);
-			anim.SetBool ("looking", true);
+			anim.SetTrigger ("Evaluate");
+			//anim.SetBool ("looking", true);
 		}
 
 		public void LookUpDices () {
@@ -164,6 +165,7 @@ namespace MW_DiceGame {
 			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
 				lookBtn.SetActive (false);
 				hideBtn.SetActive (true);
+				//hideBtn.GetComponent<Button> ().interactable = true;
 				anim.SetBool ("looking", true);
 			}
 		}
@@ -176,6 +178,7 @@ namespace MW_DiceGame {
 
 			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
 				lookBtn.SetActive (true);
+				//lookBtn.GetComponent<Button> ().interactable = true;
 				hideBtn.SetActive (false);
 				anim.SetBool ("looking", false);
 			}

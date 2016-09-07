@@ -21,17 +21,22 @@ namespace MW_DiceGame {
 
 		public delegate void ColorDelegate (Slots targetSlot, Colors newColor);
 
-		public delegate void ButtonControlsDelegate (bool isMyTurn);
+		//public delegate void ButtonControlsDelegate (bool isMyTurn);
 
 		public static event PlayerNameDelegate PlayerNameChangedEvent;
 		public static event ColorDelegate ColorChangedEvent;
 
-		public static event ButtonControlsDelegate ShowControlsEvent;
+		//public static event ButtonControlsDelegate ShowControlsEvent;
 		//public static event ButtonControlsDelegate HideControlsEvent;
-		public static event ButtonControlsDelegate ActiveControlsEvent;
+		//public static event ButtonControlsDelegate ActiveControlsEvent;
 		//public static event ButtonControlsDelegate PassiveControlsEvent;
 
-		IAction actionStrategy;
+
+		public delegate void NextPlayerDelegate (bool isMyTurn);
+
+		public static event NextPlayerDelegate ItIsMyTurnEvent;
+
+		//IAction actionStrategy;
 
 
 
@@ -55,10 +60,10 @@ namespace MW_DiceGame {
 			base.OnStartLocalPlayer ();
 
 			//BidController.OnEnterBid += OnEnterBid;
-			EventManager.OnCallOutBluff += OnCallOutBluff;
-			EventManager.OnDeclareSpotOn += OnDeclareBidSpotOn;
+			//EventManager.OnCallOutBluff += OnCallOutBluff;
+			//EventManager.OnDeclareSpotOn += OnDeclareBidSpotOn;
 
-			actionStrategy = null;
+			//actionStrategy = null;
 
 			cam.gameObject.SetActive (true);
 		}
@@ -71,16 +76,24 @@ namespace MW_DiceGame {
 			}
 
 			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
-				if (ActiveControlsEvent != null) {
-					Debug.Log ("ActiveControlsEvent: " + isMyTurn);
-					ActiveControlsEvent (isMyTurn);
-				}
-			} else {
-				if (ShowControlsEvent != null) {
-					Debug.Log ("ShowControlsEvent: " + isMyTurn);
-					ShowControlsEvent (isMyTurn);
+				
+				if (!Table.singleton.BidAlreadyExists ()) {
+					Table.singleton.SendBidDoesNotExistEvent (isMyTurn);
+				} else {
+					if (ItIsMyTurnEvent != null) {
+						//Debug.Log (playerName + " --> ItIsMyTurnEvent: " + isMyTurn);
+						ItIsMyTurnEvent (isMyTurn);
+					}
 				}
 			}
+			/* else {
+				if (ShowControlsEvent != null) {
+					Debug.Log ("ShowControlsEvent: " + isMyTurn);
+					Debug.Log ("HideDices");
+					GetComponent<DiceCup> ().HideDices ();
+					ShowControlsEvent (isMyTurn);
+				}
+			}*/
 
 		}
 
@@ -92,17 +105,17 @@ namespace MW_DiceGame {
 			child.transform.SetParent (container.transform);
 		}
 
-		void SetActionStrategy (IAction strategy) {
+		/*void SetActionStrategy (IAction strategy) {
 			actionStrategy = strategy;
 		}
 
-		/*void OnEnterBid (Bid bidData) {
+		void OnEnterBid (Bid bidData) {
 			Bid bid = new Bid (bidData.dieFace, bidData.quantity, this.netId);
 			Debug.LogFormat ("Enter Bid {0}", bid);
 
 			SetActionStrategy (new EnterBid (bid));
 			HandleAction ();
-		}*/
+		}
 
 		void OnCallOutBluff () {
 			Debug.LogFormat ("Call Out Bluff");
@@ -124,10 +137,10 @@ namespace MW_DiceGame {
 			// if status "Bidding"
 
 			if (isMyTurn) {
-				actionStrategy.ExecuteAction ();
+				actionStrategy.ExecuteAction (Table.singleton);
 			}
 
-		}
+		}*/
 
 		public override string ToString () {
 			return string.Format ("[GamePlayer: playerName={0}, color={1}, slot={2}, isMyTurn={3}]", playerName, color, slotId, isMyTurn);

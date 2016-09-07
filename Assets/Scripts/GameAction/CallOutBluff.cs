@@ -8,16 +8,23 @@ public class CallOutBluff : IAction {
 		
 	#region IAction implementation
 
-	public void ExecuteAction () {
-		//Table.singleton.NextPlayer (); // Instance nur auf dem Server verfügbar!
-		/*
-		NetworkClient client = Lobby.singleton.client;
-		if (client == null || !client.isConnected) {
-			return;
+	public void ExecuteAction (Table table) {
+		int value = 0;
+		table.dieFaceMap.TryGetValue (table.currentBid.dieFace, out value);
+		Bid realBidOnTable = new Bid (table.currentBid.dieFace, value);
+
+		Transform player;
+
+		if (table.currentBid.IsBluff (realBidOnTable)) {
+			Debug.Log ("Table - Bluff: last player loses a dice.");
+			player = table.GetLastPlayer ();
+		} else {
+			Debug.Log ("Table - No Bluff: current player " + table.GetCurrentPlayer ().GetComponent<GamePlayer> ().playerName + " loses a dice.");
+			player = table.GetCurrentPlayer ();
 		}
 
-		var msg = new EmptyMessage ();
-		client.Send (ActionMsg.CallOutBluff, msg);*/
+		DiceCup diceCup = player.GetComponent<DiceCup> ();
+		diceCup.CmdDecreaseDiceFromPlayer ();
 	}
 
 	#endregion

@@ -26,7 +26,6 @@ namespace MW_DiceGame {
 		public const int minBidDieFaceValue = 1;
 
 
-
 		public Bid (DieFaces dieFace, int quantity) {
 			this.dieFace = dieFace;
 			this.quantity = quantity;

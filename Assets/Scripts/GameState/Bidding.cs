@@ -1,36 +1,44 @@
 ﻿using UnityEngine;
 using System.Collections;
 using MW_DiceGame;
+using UnityEngine.Networking;
 
-public class Bidding : IState {
+public class Bidding : AbstractState {
 
 	Table table;
 
-	public Bidding (Table table) {
+	public Bidding (Table table, IAction action) {
 		Debug.Log ("Bidding");
 		this.table = table;
+		this.action = action;
 	}
 
 
-	#region IState implementation
+	public override void Execute () {
+		table.ThrowDices ();
 
-	public void StartGame () {
+		Debug.LogWarning ("Reset Current Bid");
+		table.currentBid = new Bid (DieFaces.Null, 0);
+		// reset bid view ------------------------------------------
+
+		table.NextPlayer ();
+		//Transform player = table.GetCurrentPlayer ();
+		//player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true); // called twice
 	}
 
-	public void NextPlayer () {
-		table.SetGameState (new Bidding (table));
+	public override void StartGame () {
+		//Transform player = table.GetCurrentPlayer ();
+		//player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true);
 	}
 
-	public void EnterEvaluationPhase () {
-		table.SetGameState (new EvaluationPhase (table));
+	public override void NextPlayer () {
+		//table.SetGameState (new Bidding (table));
+		//action.ExecuteAction (table);
 	}
 
-	public void EnterBidding () {
+	public override void EnterEvaluationPhase () {
+		table.SetGameState (new EvaluationPhase (table, action));
 	}
 
-	public void LeaveGame () {
-	}
-
-	#endregion
 }
 

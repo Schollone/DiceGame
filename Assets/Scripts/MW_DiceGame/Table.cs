@@ -17,9 +17,16 @@ namespace MW_DiceGame {
 			GameOver
 		}
 
+		public delegate void ControlbarButtonsDelegate ();
+
+		public delegate void ActionButtonsDelegate (bool isMyTurn);
+
+		public static event ControlbarButtonsDelegate UnlockControlsEvent;
+		public static event ControlbarButtonsDelegate LockControlsEvent;
+		public static event ActionButtonsDelegate BidDoesNotExistEvent;
 
 
-		[SyncVar]
+		[SyncVar (hook = "OnGameStateChange")]
 		public GameState theGameState;
 
 		[SyncVar (hook = "OnBidChange")]
@@ -27,20 +34,70 @@ namespace MW_DiceGame {
 
 		public static Table singleton;
 
-		Transform players;
+		public Transform players;
 		IState gameState;
 		int playerIndex = 0;
-		IDictionary<DieFaces, int> dieFaceMap;
-		int clientsReady = 1;
+		public IDictionary<DieFaces, int> dieFaceMap;
+		int clientsReadyCount = 1;
+
+		// ----- Hooks ----- //
+
+		void OnGameStateChange (GameState state) {
+			Debug.Log ("OnGameStateChange");
+			this.theGameState = state;
+
+			DiceCup diceCup = null;
+
+			for (int i = 0; i < players.childCount; i++) {
+				var playerDiceCup = players.GetChild (i).GetComponent<DiceCup> ();
+				if (playerDiceCup.isLocalPlayer) {
+					diceCup = playerDiceCup;
+					break;
+				}
+			}
+
+			if (state.Equals (GameState.Bidding)) {
+				diceCup.HideDices ();
+				if (UnlockControlsEvent != null) {
+					UnlockControlsEvent ();
+				}
+
+			} else if (state.Equals (GameState.EvaluationPhase)) {
+				diceCup.HideDices ();
+				SendLockControlsEvent ();
+			} else if (state.Equals (GameState.GameOver)) {
+				diceCup.HideDices ();
+				SendLockControlsEvent ();
+			}
+		}
 
 		void OnBidChange (Bid bid) {
 			Debug.Log ("Table - OnBidChange: " + bid);
 			this.currentBid = bid;
+
+			Debug.LogWarning ("SendBidDoesNotExistEvent - isMyTurn: " + true);
+			if (!BidAlreadyExists () && BidDoesNotExistEvent != null) {
+				BidDoesNotExistEvent (true);
+			}
+		}
+
+		public void SendLockControlsEvent () {
+			Debug.LogWarning ("SendLockControlsEvent");
+			if (LockControlsEvent != null) {
+				LockControlsEvent ();
+			}
+		}
+
+		public void SendBidDoesNotExistEvent (bool isMyTurn) {
+			Debug.LogWarning ("SendBidDoesNotExistEvent - isMyTurn: " + isMyTurn);
+			if (BidDoesNotExistEvent != null) {
+				BidDoesNotExistEvent (isMyTurn);
+			}
 		}
 
 
 
-
+		// ----- Callbacks ----- //
 
 		void Awake () {
 			if (singleton == null) {
@@ -61,18 +118,16 @@ namespace MW_DiceGame {
 			NetworkServer.RegisterHandler (ActionMsg.CallOutBluff, OnCallOutBluff);
 			NetworkServer.RegisterHandler (ActionMsg.DeclareBidSpotOn, OnDeclareBidSpotOn);
 
+			InitPlayers ();
 			SetGameState (new Preparation (this));
-
-			if (players.childCount == 1) {
-				Debug.Log ("Only Host is ready to fill up dice cups");
-				StartGame ();
-			}
 		}
 
 		public override void OnStartClient () {
 			base.OnStartClient ();
 			OnBidChange (currentBid);
 		}
+
+		// ----- GameStates ----- //
 
 		[Server]
 		public IState GetGameState () {
@@ -85,14 +140,14 @@ namespace MW_DiceGame {
 			string stateName = gameState.GetType ().ToString ();
 			Debug.Log ("StateName = " + stateName);
 			this.theGameState = (GameState)Enum.Parse (typeof(GameState), stateName);
+
+			this.gameState.Execute ();
 		}
 
 		[Server]
-		public void InitPlayers () {
+		void InitPlayers () {
 			Debug.Log ("InitPlayers");
 			players = GameObject.Find ("Player").transform;
-			Transform player = GetCurrentPlayer ();
-			player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true);
 		}
 
 		[Server]
@@ -139,7 +194,6 @@ namespace MW_DiceGame {
 			for (int i = 0; i < players.childCount; i++) {
 				Transform player = players.GetChild (i);
 				player.GetComponent<DiceCup> ().CmdFillDiceCupWithDices ();
-				//player.GetComponent<DiceCup> ().RpcFillDiceCupWithDices ();
 			}
 		}
 
@@ -170,6 +224,7 @@ namespace MW_DiceGame {
 			}
 		}
 
+		// ----- Action Handler on Server ----- //
 
 		[Server]
 		void OnClientReady (NetworkMessage netMsg) {
@@ -182,13 +237,13 @@ namespace MW_DiceGame {
 				int connectionId = gamePlayer.connectionToClient.connectionId;
 
 				if (connectionId == msg.connectionId) {
-					this.clientsReady++;
+					this.clientsReadyCount++;
 					break;
 				}
 			}
 
-			Debug.Log ("clientsReady=" + clientsReady + " von insgesamt " + players.childCount + " Clients.");
-			if (this.clientsReady == players.childCount) {
+			Debug.Log ("clientsReady=" + clientsReadyCount + " von insgesamt " + players.childCount + " Clients.");
+			if (this.clientsReadyCount == players.childCount) {
 				Debug.Log ("Alle Clients are ready to fill up dice cups");
 				//Invoke ("StartGame", 3f);// StartGame ();
 				StartGame ();
@@ -202,18 +257,8 @@ namespace MW_DiceGame {
 			Debug.Log ("Server Table - OnEnterBid " + msg);
 
 			if (MayAct (msg)) {
-				if (BidAlreadyExists ()) {
-					if (this.currentBid.CanBeReplacedWith (msg.bid)) {
-						this.currentBid = msg.bid;
-						Debug.Log ("SendToAll new Bid");
-						NetworkServer.SendToAll (ActionMsg.EnterBid, msg);
-					}
-				} else {
-					this.currentBid = msg.bid;
-					Debug.Log ("SendToAll new Bid");
-					NetworkServer.SendToAll (ActionMsg.EnterBid, msg);
-				}
-
+				gameState.SetActionStrategy (new EnterBid (msg.bid));
+				gameState.GetActionStrategy ().ExecuteAction (this);
 				NextPlayer ();
 			}
 		}
@@ -224,32 +269,9 @@ namespace MW_DiceGame {
 			Debug.Log ("Server Table - OnCallOutBluff " + msg);
 
 			if (MayAct (msg)) {
-
 				if (BidAlreadyExists ()) {
+					gameState.SetActionStrategy (new CallOutBluff ());
 					EnterEvaluationPhase ();
-					
-					CountDicesOnTable ();
-					LookUpAllDices ();
-
-					int value = 0;
-					this.dieFaceMap.TryGetValue (currentBid.dieFace, out value);
-					Bid realBidOnTable = new Bid (currentBid.dieFace, value);
-
-					Transform player;
-
-					if (currentBid.IsBluff (realBidOnTable)) {
-						Debug.Log ("Table - Bluff: last player loses a dice.");
-						player = GetLastPlayer ();
-					} else {
-						Debug.Log ("Table - No Bluff: current player " + GetCurrentPlayer ().GetComponent<GamePlayer> ().playerName + " loses a dice.");
-						player = GetCurrentPlayer ();
-					}
-
-					DiceCup diceCup = player.GetComponent<DiceCup> ();
-					diceCup.CmdDecreaseDiceFromPlayer ();
-
-					EnterBidding ();
-					NextPlayer ();
 				}
 			}
 		}
@@ -260,29 +282,9 @@ namespace MW_DiceGame {
 			Debug.Log ("Server Table - OnDeclareBidSpotOn " + msg);
 
 			if (MayAct (msg)) {
-				
 				if (BidAlreadyExists ()) {
+					gameState.SetActionStrategy (new DeclareBidSpotOn ());
 					EnterEvaluationPhase ();
-
-					CountDicesOnTable ();
-					LookUpAllDices ();
-
-					int value = 0;
-					this.dieFaceMap.TryGetValue (currentBid.dieFace, out value);
-					Bid realBidOnTable = new Bid (currentBid.dieFace, value);
-
-					if (this.currentBid.IsSpotOn (realBidOnTable)) {
-						Debug.Log ("Table - IsSpotOn: Everybody loses a dice!");
-						DecreaseDiceFromOtherPlayers ();
-					} else {
-						Debug.Log ("Table - Not Spot On: " + GetCurrentPlayer ().GetComponent<GamePlayer> ().playerName + " loses a dice");
-						Transform player = GetCurrentPlayer ();
-						DiceCup diceCup = player.GetComponent<DiceCup> ();
-						diceCup.CmdDecreaseDiceFromPlayer ();
-					}
-
-					EnterBidding ();
-					NextPlayer ();
 				}
 			}
 		}
@@ -318,12 +320,12 @@ namespace MW_DiceGame {
 		}
 
 		[Server]
-		Transform GetCurrentPlayer () {
+		public Transform GetCurrentPlayer () {
 			return players.GetChild (playerIndex);
 		}
 
 		[Server]
-		Transform GetLastPlayer () {
+		public Transform GetLastPlayer () {
 			int lastPlayerIndex = playerIndex - 1;
 			if (lastPlayerIndex < 0) {
 				lastPlayerIndex = players.childCount - 1;
@@ -332,7 +334,8 @@ namespace MW_DiceGame {
 		}
 
 		[Server]
-		bool BidAlreadyExists () {
+		public bool BidAlreadyExists () {
+			Debug.Log ("currentBid.dieFace " + currentBid.dieFace);
 			if (currentBid.dieFace != DieFaces.Null) {
 				return true;
 			}
@@ -341,7 +344,7 @@ namespace MW_DiceGame {
 		}
 
 		[Server]
-		void LookUpAllDices () {
+		public void LookUpAllDices () {
 			for (int i = 0; i < players.childCount; i++) {
 				Transform player = players.GetChild (i);
 
@@ -351,7 +354,7 @@ namespace MW_DiceGame {
 		}
 
 		[Server]
-		void DecreaseDiceFromOtherPlayers () {
+		public void DecreaseDiceFromOtherPlayers () {
 			for (int i = 0; i < players.childCount; i++) {
 				if (playerIndex != i) {
 					Transform player = players.GetChild (i);
