@@ -9,7 +9,7 @@ using MW_DiceGame;
 public class Lobby : LobbyHook {
 
 	public override GameObject OnLobbyServerCreateGamePlayer (NetworkManager manager, NetworkConnection conn, short playerControllerId) {
-		Debug.Log ("Lobby - OnLobbyServerCreateGamePlayer");
+		//Debug.Log ("Lobby - OnLobbyServerCreateGamePlayer");
 		var lobbyManager = manager as LobbyManager;
 
 		Transform startPos = lobbyManager.GetStartPosition ();
@@ -18,9 +18,9 @@ public class Lobby : LobbyHook {
 		for (int i = 0; i < startPosArray.Length; i++) {
 			startPos = startPosArray [i];
 			SpawnPosition spawnPosition = startPos.GetComponent<SpawnPosition> ();
-			Debug.Log ("IsTaken: " + spawnPosition.IsTaken);
+			//Debug.Log ("IsTaken: " + spawnPosition.IsTaken);
 			if (!spawnPosition.IsTaken) {
-				Debug.Log ("IsNotTaken: " + spawnPosition.name);
+				//Debug.Log ("IsNotTaken: " + spawnPosition.name);
 				spawnPosition.IsTaken = true;
 				break;
 			}
@@ -33,7 +33,7 @@ public class Lobby : LobbyHook {
 
 	public override bool OnLobbyServerSceneLoadedForPlayer (NetworkManager manager, GameObject lobbyPlayer, GameObject gamePlayer) {
 
-		Debug.Log ("OnLobbyServerSceneLoadedForPlayer");
+		//Debug.Log ("OnLobbyServerSceneLoadedForPlayer");
 
 		Prototype.NetworkLobby.LobbyPlayer lp = lobbyPlayer.GetComponent<Prototype.NetworkLobby.LobbyPlayer> ();
 		GamePlayer gp = gamePlayer.GetComponent<GamePlayer> ();

@@ -63,9 +63,10 @@ namespace Prototype.NetworkLobby {
 
 			//setup the player data on UI. The value are SyncVar so the player
 			//will be created with the right value currently on server
+			slotId = SlotMethods.Parse (slot);
 			OnMyName (playerName);
 			OnColorChanged (color);
-			slotId = SlotMethods.Parse (slot);
+
 			//OnMyColor (playerColor);
 		}
 
@@ -162,7 +163,7 @@ namespace Prototype.NetworkLobby {
 				colorButton.interactable = false;
 				nameInput.interactable = false;
 
-				CmdSlotIdChange (slotId);
+				//CmdSlotIdChange (slotId);
 			} else {
 				//ChangeReadyButtonColor (isLocalPlayer ? JoinColor : NotReadyColor);
 

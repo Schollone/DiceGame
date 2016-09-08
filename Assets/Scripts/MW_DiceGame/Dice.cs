@@ -80,6 +80,8 @@ namespace MW_DiceGame {
 				if (velocity == 0) {
 					dieFace = CalculateDieFace ();
 					diceThrown = true;
+
+					GetComponent<Rigidbody> ().isKinematic = true;
 				}
 			}
 		}

@@ -85,7 +85,11 @@ namespace MW_DiceGame {
 				return false;
 			}
 
-			if (newBid.quantity >= this.quantity) {
+			if (newBid.quantity > this.quantity) {
+				return true;
+			}
+
+			if (newBid.quantity == this.quantity) {
 				if (newBid.dieFace.GetIndex () > this.dieFace.GetIndex ()) {
 					return true;
 				}

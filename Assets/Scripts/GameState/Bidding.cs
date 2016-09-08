@@ -18,10 +18,12 @@ public class Bidding : AbstractState {
 		table.ThrowDices ();
 
 		Debug.LogWarning ("Reset Current Bid");
-		table.currentBid = new Bid (DieFaces.Null, 0);
+		table.ResetBid ();
 		// reset bid view ------------------------------------------
 
-		table.NextPlayer ();
+		//table.NextPlayer ();
+		var player = table.GetCurrentPlayer ();
+		player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true);
 		//Transform player = table.GetCurrentPlayer ();
 		//player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true); // called twice
 	}

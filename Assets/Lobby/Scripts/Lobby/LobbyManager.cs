@@ -116,7 +116,7 @@ namespace Prototype.NetworkLobby {
 				newPanel.gameObject.SetActive (true);
 			}
 
-			Debug.Log ("new Panel: " + newPanel);
+			//Debug.Log ("new Panel: " + newPanel);
 			currentPanel = newPanel;
 
 			if (currentPanel == mainMenuPanel) {

@@ -32,7 +32,7 @@ namespace MW_DiceGame {
 		//public static event ButtonControlsDelegate PassiveControlsEvent;
 
 
-		public delegate void NextPlayerDelegate (bool isMyTurn);
+		public delegate void NextPlayerDelegate (bool isMyTurn, bool bidAlreadyExists);
 
 		public static event NextPlayerDelegate ItIsMyTurnEvent;
 
@@ -42,7 +42,7 @@ namespace MW_DiceGame {
 
 		public override void OnStartClient () {
 			base.OnStartClient ();
-			Debug.Log ("playerName=" + playerName);
+			//Debug.Log ("playerName=" + playerName);
 			PutInContainer ("Player", gameObject);
 			gameObject.name = "Player" + playerName;
 
@@ -77,13 +77,15 @@ namespace MW_DiceGame {
 
 			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
 				
-				if (!Table.singleton.BidAlreadyExists ()) {
-					Table.singleton.SendBidDoesNotExistEvent (isMyTurn);
-				} else {
-					if (ItIsMyTurnEvent != null) {
-						//Debug.Log (playerName + " --> ItIsMyTurnEvent: " + isMyTurn);
-						ItIsMyTurnEvent (isMyTurn);
-					}
+				/*if (!Table.singleton.BidAlreadyExists ()) {
+					Debug.Log (playerName + ". Das Gebot existiert nicht. Sende Event! isMyTurn=" + isMyTurn);
+					Table.singleton.SendOnBidChangedEvent (isMyTurn);
+
+				}*/
+				if (ItIsMyTurnEvent != null) {
+					Debug.Log (playerName + ". Das Gebot existiert bereits. Sende Event! isMyTurn=" + isMyTurn);
+					//Debug.Log (playerName + " --> ItIsMyTurnEvent: " + isMyTurn);
+					ItIsMyTurnEvent (isMyTurn, Table.singleton.BidAlreadyExists ());
 				}
 			}
 			/* else {
@@ -149,7 +151,14 @@ namespace MW_DiceGame {
 
 		[Command]
 		public void CmdItIsYourTurn (bool isMyTurn) {
-			Debug.Log ("It is your turn: " + isMyTurn);
+			//Debug.Log ("CmdItIsYourTurn: " + isMyTurn);
+
+			if (isMyTurn) {
+				Debug.Log (playerName + " ist an der Reihe!");
+			} else {
+				Debug.Log (playerName + " ist nicht mehr an der Reihe!");
+			}
+
 			this.isMyTurn = isMyTurn;
 		}
 	}

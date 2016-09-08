@@ -38,16 +38,21 @@ namespace MW_DiceGame {
 
 
 		public override void OnStartClient () {
-			Debug.Log ("DiceCup - OnStartClient");
+			//Debug.Log ("DiceCup - OnStartClient");
 			base.OnStartClient ();
 
 			rect1 = rect2 = new Rect ();
 
 			OnAvailableDicesChanged (availableDices);
+
+			spawnPoints = new Transform[maxDices];
+			for (int i = 0; i < spawnPoints.Length; i++) {
+				spawnPoints [i] = diceSpawnPoints.transform.GetChild (i);
+			}
 		}
 
 		public override void OnStartLocalPlayer () {
-			Debug.Log ("DiceCup - OnStartLocalPlayer");
+			//Debug.Log ("DiceCup - OnStartLocalPlayer");
 			base.OnStartLocalPlayer ();
 
 			lookBtn = GameObject.Find (LookButtonName);
@@ -60,14 +65,11 @@ namespace MW_DiceGame {
 			EventManager.OnLook += LookUpDices;
 			EventManager.OnHide += HideDices;
 
-			spawnPoints = new Transform[maxDices];
-			for (int i = 0; i < spawnPoints.Length; i++) {
-				spawnPoints [i] = diceSpawnPoints.transform.GetChild (i);
-			}
+
 		}
 
 		void OnAvailableDicesChanged (int availableDices) {
-			Debug.Log ("DiceCup - OnAvailableDicesChange " + availableDices);
+			//Debug.Log ("DiceCup - OnAvailableDicesChange " + availableDices);
 			this.availableDices = availableDices;
 			if (AvailableDicesChangedEvent != null) {
 				AvailableDicesChangedEvent (GetComponent<GamePlayer> ().slotId, availableDices);
@@ -122,7 +124,7 @@ namespace MW_DiceGame {
 			//GameObject diceContainer = GameObject.Find (gamePlayer.playerName);
 			GameObject diceContainer = spawnManager.container;
 
-			Debug.Log ("Fill DiceCup: availableDices=" + availableDices);
+			//Debug.Log ("Fill DiceCup: availableDices=" + availableDices);
 			for (int i = 0; i < availableDices; i++) {
 				
 				ThrowDice (diceContainer, i);
@@ -136,10 +138,11 @@ namespace MW_DiceGame {
 			dice.ResetDice ();
 
 			diceGO.position = spawnPoints [i].position;
+			diceGO.GetComponent<Rigidbody> ().isKinematic = false;
 
 			float angle = Random.Range (72 - 30, 72 + 30);
 			//spawnPoints [i].Rotate (Vector3.up, angle, Space.World);
-			Debug.Log ("Rotation: " + spawnPoints [i].rotation.ToString ());
+			//Debug.Log ("Rotation: " + spawnPoints [i].rotation.ToString ());
 			diceGO.transform.rotation = Random.rotation;
 			//diceGO.GetComponent<Rigidbody> ().AddForce (diceSpawnPoints.up * speed * Time.deltaTime, ForceMode.Impulse);
 		}
@@ -157,7 +160,7 @@ namespace MW_DiceGame {
 		}
 
 		public void LookUpDices () {
-			Debug.LogFormat ("Look Up Dices");
+			//Debug.LogFormat ("Look Up Dices");
 			if (!isLocalPlayer) {
 				return;
 			}
@@ -171,7 +174,7 @@ namespace MW_DiceGame {
 		}
 
 		public void HideDices () {
-			Debug.LogFormat ("Hide Dices");
+			//Debug.LogFormat ("Hide Dices");
 			if (!isLocalPlayer) {
 				return;
 			}

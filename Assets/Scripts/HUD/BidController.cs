@@ -35,7 +35,7 @@ public class BidController : MonoBehaviour {
 	void Awake () {
 		Table.UnlockControlsEvent += OnUnlockControls;
 		Table.LockControlsEvent += OnLockControls;
-		Table.BidDoesNotExistEvent += OnBidDoesNotExist;
+		Table.OnBidChangedEvent += OnBidChanged;
 		GamePlayer.ItIsMyTurnEvent += OnIsMyTurn;
 		//GamePlayer.HideControlsEvent += OnHideControls;
 		//increaseQuantityTextColor = increaseQuantityButton.transform.GetChild (0).GetComponent<Text> ().color;
@@ -45,37 +45,41 @@ public class BidController : MonoBehaviour {
 	}
 
 	void Start () {
-		Debug.Log ("BidController - Start");
+		//Debug.Log ("BidController - Start");
 		NetworkClient client = LobbyManager.singleton.client;
 		client.RegisterHandler (ActionMsg.EnterBid, OnBidEntered);
 
-		bidQuantity = 1;
-		bidDieFaceValue = 1;
+		ResetBidDisplay ();
+	}
+
+	void ResetBidDisplay () {
+		bidQuantity = Bid.minBidQuantity;
+		bidDieFaceValue = Bid.minBidDieFaceValue;
 
 		DisplayBidQuantity ();
 		DisplayBidDieFace ();
 		UpdateInteractableButtons ();
 	}
 
-
-
 	void OnUnlockControls () {
 		//UpdateInteractableButtons ();
+		ResetBidDisplay ();
 	}
 
 	void OnLockControls () {
 		LockBidButtons ();
 	}
 
-	void OnBidDoesNotExist (bool isMyTurn) {
-		UpdateInteractableButtons ();
-		bidQuantity = 1;
-		bidDieFaceValue = 1;
+	void OnBidChanged (bool isMyTurn) {
+		Debug.Log ("BidController: OnBidChanged");
 		DisplayBidQuantity ();
 		DisplayBidDieFace ();
+		if (isMyTurn) {
+			UpdateInteractableButtons ();
+		}
 	}
 
-	void OnIsMyTurn (bool isMyTurn) {
+	void OnIsMyTurn (bool isMyTurn, bool bidAleadyExists) {
 		Debug.Log ("BidController: OnIsMyTurn " + isMyTurn);
 
 		if (isMyTurn) {
@@ -157,17 +161,17 @@ public class BidController : MonoBehaviour {
 		Bid bid = new Bid ((DieFaces)Enum.ToObject (typeof(DieFaces), bidDieFaceValue), bidQuantity);
 		msg.bid = bid;
 		msg.connectionId = client.connection.connectionId;
+		Debug.Log ("Send to Server new Enter: " + msg.bid);
 		client.Send (ActionMsg.EnterBid, msg);
 	}
 
 	void OnBidEntered (NetworkMessage netMsg) {
-		Debug.Log ("BitController ___ OnBidEntered");
+		//Debug.Log ("BitController ___ OnBidEntered");
 		var msg = netMsg.ReadMessage<ActionMessage> ();
 		this.bidQuantity = msg.bid.quantity;
 		this.bidDieFaceValue = msg.bid.dieFace.GetIndex ();
 
 		UpdateInteractableButtons ();
-
 
 		DisplayBidQuantity ();
 		DisplayBidDieFace ();
@@ -175,7 +179,7 @@ public class BidController : MonoBehaviour {
 
 	void UpdateInteractableButtons () {
 		Bid currentBid = Table.singleton.currentBid;
-		Debug.LogWarning (currentBid);
+		//Debug.LogWarning (currentBid);
 
 		if (currentBid.Exists ()) {
 			UpdateButtonsIfCurrentBidExists (currentBid);
@@ -188,8 +192,8 @@ public class BidController : MonoBehaviour {
 	void UpdateButtonsIfCurrentBidExists (Bid currentBid) {
 		if (bidQuantity == currentBid.quantity) {
 			this.decreaseQuantityButton.interactable = false;
-			Color color = new Color ();
-			this.decreaseQuantityText.color = ColorMethods.transparentBlackColor;
+			//Color color = new Color ();
+			//this.decreaseQuantityText.color = ColorMethods.transparentBlackColor;
 
 			UpdateDecreaseDieFaceBtn (currentBid.dieFace.GetIndex ());
 			UpdateIncreaseDieFaceBtn ();
@@ -197,7 +201,7 @@ public class BidController : MonoBehaviour {
 
 		} else if (bidQuantity > currentBid.quantity) {
 			this.decreaseQuantityButton.interactable = true;
-			this.decreaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
+			//this.decreaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
 
 			UpdateDecreaseDieFaceBtn (Bid.minBidDieFaceValue);
 			UpdateIncreaseDieFaceBtn ();
@@ -215,43 +219,43 @@ public class BidController : MonoBehaviour {
 
 
 	void UpdateDecreaseQuantityBtn () {
-		Debug.Log ("bidQuantity == Bid.minBidQuantity: " + bidQuantity + " == " + Bid.minBidQuantity);
+		//Debug.Log ("bidQuantity == Bid.minBidQuantity: " + bidQuantity + " == " + Bid.minBidQuantity);
 		if (bidQuantity == Bid.minBidQuantity) {
 			this.decreaseQuantityButton.interactable = false;
-			this.decreaseQuantityText.color = ColorMethods.transparentBlackColor;
+			//this.decreaseQuantityText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.decreaseQuantityButton.interactable = true;
-			this.decreaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
+			//this.decreaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
 	void UpdateDecreaseDieFaceBtn (int lowestComparativeValue) {
 		if (bidDieFaceValue == lowestComparativeValue) {
 			this.decreaseDieFaceButton.interactable = false;
-			this.decreaseDieFaceText.color = ColorMethods.transparentBlackColor;
+			//this.decreaseDieFaceText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.decreaseDieFaceButton.interactable = true;
-			this.decreaseDieFaceText.color = ColorMethods.visibleDarkBrownColor;
+			//this.decreaseDieFaceText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
 	void UpdateIncreaseDieFaceBtn () {
 		if (bidDieFaceValue == Bid.maxBidDieFaceValue) {
 			this.increaseDieFaceButton.interactable = false;
-			this.increaseDieFaceText.color = ColorMethods.transparentBlackColor;
+			//this.increaseDieFaceText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.increaseDieFaceButton.interactable = true;
-			this.increaseDieFaceText.color = ColorMethods.visibleDarkBrownColor;
+			//this.increaseDieFaceText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
 	void UpdateIncreaseQuantityBtn () {
 		if (bidQuantity == Bid.maxBidQuantity) {
 			this.increaseQuantityButton.interactable = false;
-			this.increaseQuantityText.color = ColorMethods.transparentBlackColor;
+			//this.increaseQuantityText.color = ColorMethods.transparentBlackColor;
 		} else {
 			this.increaseQuantityButton.interactable = true;
-			this.increaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
+			//this.increaseQuantityText.color = ColorMethods.visibleDarkBrownColor;
 		}
 	}
 
@@ -279,7 +283,7 @@ public class BidController : MonoBehaviour {
 	void OnDestroy () {
 		Table.UnlockControlsEvent -= OnUnlockControls;
 		Table.LockControlsEvent -= OnLockControls;
-		Table.BidDoesNotExistEvent -= OnBidDoesNotExist;
+		Table.OnBidChangedEvent -= OnBidChanged;
 		GamePlayer.ItIsMyTurnEvent -= OnIsMyTurn;
 	}
 }

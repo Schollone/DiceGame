@@ -19,11 +19,11 @@ namespace MW_DiceGame {
 
 		public delegate void ControlbarButtonsDelegate ();
 
-		public delegate void ActionButtonsDelegate (bool isMyTurn);
+		public delegate void ActionButtonsDelegate (bool bidAlreadyExists);
 
 		public static event ControlbarButtonsDelegate UnlockControlsEvent;
 		public static event ControlbarButtonsDelegate LockControlsEvent;
-		public static event ActionButtonsDelegate BidDoesNotExistEvent;
+		public static event ActionButtonsDelegate OnBidChangedEvent;
 
 
 		[SyncVar (hook = "OnGameStateChange")]
@@ -39,62 +39,6 @@ namespace MW_DiceGame {
 		int playerIndex = 0;
 		public IDictionary<DieFaces, int> dieFaceMap;
 		int clientsReadyCount = 1;
-
-		// ----- Hooks ----- //
-
-		void OnGameStateChange (GameState state) {
-			Debug.Log ("OnGameStateChange");
-			this.theGameState = state;
-
-			DiceCup diceCup = null;
-
-			for (int i = 0; i < players.childCount; i++) {
-				var playerDiceCup = players.GetChild (i).GetComponent<DiceCup> ();
-				if (playerDiceCup.isLocalPlayer) {
-					diceCup = playerDiceCup;
-					break;
-				}
-			}
-
-			if (state.Equals (GameState.Bidding)) {
-				diceCup.HideDices ();
-				if (UnlockControlsEvent != null) {
-					UnlockControlsEvent ();
-				}
-
-			} else if (state.Equals (GameState.EvaluationPhase)) {
-				diceCup.HideDices ();
-				SendLockControlsEvent ();
-			} else if (state.Equals (GameState.GameOver)) {
-				diceCup.HideDices ();
-				SendLockControlsEvent ();
-			}
-		}
-
-		void OnBidChange (Bid bid) {
-			Debug.Log ("Table - OnBidChange: " + bid);
-			this.currentBid = bid;
-
-			Debug.LogWarning ("SendBidDoesNotExistEvent - isMyTurn: " + true);
-			if (!BidAlreadyExists () && BidDoesNotExistEvent != null) {
-				BidDoesNotExistEvent (true);
-			}
-		}
-
-		public void SendLockControlsEvent () {
-			Debug.LogWarning ("SendLockControlsEvent");
-			if (LockControlsEvent != null) {
-				LockControlsEvent ();
-			}
-		}
-
-		public void SendBidDoesNotExistEvent (bool isMyTurn) {
-			Debug.LogWarning ("SendBidDoesNotExistEvent - isMyTurn: " + isMyTurn);
-			if (BidDoesNotExistEvent != null) {
-				BidDoesNotExistEvent (isMyTurn);
-			}
-		}
-
 
 
 		// ----- Callbacks ----- //
@@ -112,20 +56,110 @@ namespace MW_DiceGame {
 
 		public override void OnStartServer () {
 			base.OnStartServer ();
+			Debug.Log ("OnStartServer");
 
 			NetworkServer.RegisterHandler (ActionMsg.ClientReady, OnClientReady);
 			NetworkServer.RegisterHandler (ActionMsg.EnterBid, OnEnterBid);
 			NetworkServer.RegisterHandler (ActionMsg.CallOutBluff, OnCallOutBluff);
 			NetworkServer.RegisterHandler (ActionMsg.DeclareBidSpotOn, OnDeclareBidSpotOn);
 
-			InitPlayers ();
-			SetGameState (new Preparation (this));
+			//InitPlayers ();
+
 		}
 
 		public override void OnStartClient () {
 			base.OnStartClient ();
-			OnBidChange (currentBid);
+			Debug.Log ("OnStartClient");
+
+			/*if (isServer) {
+				return;
+			}*/
+
+			InitPlayers ();
+			this.currentBid = currentBid;
+			if (OnBidChangedEvent != null) {
+				OnBidChangedEvent (BidAlreadyExists ());
+			}
 		}
+
+		void Start () {
+			Debug.Log ("Start");
+			SetGameState (new Preparation (this));
+		}
+
+
+		// ----- Hooks ----- //
+
+		void OnGameStateChange (GameState state) {
+			Debug.Log ("Setze GameState auf " + state);
+			this.theGameState = state;
+
+			if (state.Equals (GameState.Preparation) || state.Equals (GameState.GameOver)) {
+				return;
+			}
+
+			DiceCup diceCup = null;
+
+			for (int i = 0; i < players.childCount; i++) {
+				var playerDiceCup = players.GetChild (i).GetComponent<DiceCup> ();
+				if (playerDiceCup.isLocalPlayer) {
+					diceCup = playerDiceCup;
+					break;
+				}
+			}
+
+			if (state.Equals (GameState.Bidding)) {
+				diceCup.HideDices ();
+				if (UnlockControlsEvent != null) {
+					Debug.Log ("Aktiviere Look und Hide Buttons");
+					UnlockControlsEvent ();
+				}
+
+			} else {
+				diceCup.HideDices ();
+				SendLockControlsEvent ();
+			}
+		}
+
+		[Client]
+		void OnBidChange (Bid bid) {
+			//Debug.Log ("Table - OnBidChange: " + bid);
+			if (isServer) {
+				//return;
+			}
+				
+			ChangeBidOnClients (bid);
+		}
+
+		[Client]
+		void ChangeBidOnClients (Bid bid) {
+			this.currentBid = bid;
+			Debug.LogWarningFormat ("OnBidChange {0} - SendBidDoesNotExistEvent - isMyTurn: {1}", bid, true);
+
+			//if (!BidAlreadyExists () && BidDoesNotExistEvent != null) {
+			//var isMyTurn = this.GetCurrentPlayer ().GetComponent<GamePlayer> ().isMyTurn;
+			if (OnBidChangedEvent != null) {
+				OnBidChangedEvent (BidAlreadyExists ());
+			}
+		}
+
+		public void SendLockControlsEvent () {
+			Debug.LogWarning ("Deaktiviere alle Buttons");
+			if (LockControlsEvent != null) {
+				LockControlsEvent ();
+			}
+		}
+
+		/*public void SendOnBidChangedEvent (bool isMyTurn) {
+			Debug.LogWarning ("Es gibt kein Gebot. Sende Event! - isMyTurn: " + isMyTurn);
+			if (OnBidChangedEvent != null) {
+				OnBidChangedEvent ();
+			}
+		}*/
+
+
+
+
 
 		// ----- GameStates ----- //
 
@@ -136,17 +170,17 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void SetGameState (IState gameState) {
+			Debug.Log ("Setze GameState auf " + gameState);
 			this.gameState = gameState;
 			string stateName = gameState.GetType ().ToString ();
-			Debug.Log ("StateName = " + stateName);
+			//Debug.Log ("StateName = " + stateName);
 			this.theGameState = (GameState)Enum.Parse (typeof(GameState), stateName);
 
 			this.gameState.Execute ();
 		}
 
-		[Server]
 		void InitPlayers () {
-			Debug.Log ("InitPlayers");
+			//Debug.Log ("InitPlayers");
 			players = GameObject.Find ("Player").transform;
 		}
 
@@ -158,6 +192,7 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void NextPlayer () {
+			Debug.LogWarning ("NextPlayer");
 			this.gameState.NextPlayer ();
 
 			Transform player = GetCurrentPlayer ();
@@ -229,7 +264,7 @@ namespace MW_DiceGame {
 		[Server]
 		void OnClientReady (NetworkMessage netMsg) {
 			var msg = netMsg.ReadMessage<ActionMessage> ();
-			Debug.Log ("Server Table - OnClientReady " + msg);
+			//Debug.Log ("Server Table - OnClientReady " + msg);
 
 			for (int i = 0; i < players.childCount; i++) {
 				var player = players.GetChild (i);
@@ -242,9 +277,9 @@ namespace MW_DiceGame {
 				}
 			}
 
-			Debug.Log ("clientsReady=" + clientsReadyCount + " von insgesamt " + players.childCount + " Clients.");
+			//Debug.Log ("clientsReady=" + clientsReadyCount + " von insgesamt " + players.childCount + " Clients.");
 			if (this.clientsReadyCount == players.childCount) {
-				Debug.Log ("Alle Clients are ready to fill up dice cups");
+				//Debug.Log ("Alle Clients are ready to fill up dice cups");
 				//Invoke ("StartGame", 3f);// StartGame ();
 				StartGame ();
 			}
@@ -333,14 +368,18 @@ namespace MW_DiceGame {
 			return players.GetChild (lastPlayerIndex);
 		}
 
-		[Server]
 		public bool BidAlreadyExists () {
-			Debug.Log ("currentBid.dieFace " + currentBid.dieFace);
+			//Debug.Log ("currentBid.dieFace " + currentBid.dieFace);
 			if (currentBid.dieFace != DieFaces.Null) {
 				return true;
 			}
 
 			return false;
+		}
+
+		[Server]
+		public void ResetBid () {
+			this.currentBid = new Bid (DieFaces.Null, 0);
 		}
 
 		[Server]

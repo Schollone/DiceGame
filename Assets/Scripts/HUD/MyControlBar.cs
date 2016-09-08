@@ -12,11 +12,11 @@ public class MyControlBar : MonoBehaviour {
 	public Button lookUpDicesButton;
 	public Button hideDicesButton;
 
-	Text enterBidText;
+	/*Text enterBidText;
 	Text callOutBluffText;
 	Text declareBidSpotOnText;
 	Text lookUpDicesText;
-	Text hideDicesText;
+	Text hideDicesText;*/
 
 	void Awake () {
 		//GamePlayer.ShowControlsEvent += OnShowControls;
@@ -24,7 +24,7 @@ public class MyControlBar : MonoBehaviour {
 
 		Table.UnlockControlsEvent += OnUnlockControls;
 		Table.LockControlsEvent += OnLockControls;
-		Table.BidDoesNotExistEvent += OnBidDoesNotExist;
+		Table.OnBidChangedEvent += OnBidChanged;
 		GamePlayer.ItIsMyTurnEvent += OnItIsMyTurn;
 
 
@@ -36,6 +36,7 @@ public class MyControlBar : MonoBehaviour {
 	}
 
 	void OnUnlockControls () {
+		Debug.LogWarning ("UnlockControls set true");
 		/*enterBidButton.interactable = true;
 		callOutBluffButton.interactable = true;
 		declareBidSpotOnButton.interactable = true;*/
@@ -44,6 +45,7 @@ public class MyControlBar : MonoBehaviour {
 	}
 
 	void OnLockControls () {
+		Debug.LogWarning ("LockControls set false");
 		enterBidButton.interactable = false;
 		callOutBluffButton.interactable = false;
 		declareBidSpotOnButton.interactable = false;
@@ -51,19 +53,28 @@ public class MyControlBar : MonoBehaviour {
 		hideDicesButton.interactable = false;
 	}
 
-	void OnBidDoesNotExist (bool isMyTurn) {
-		enterBidButton.interactable = isMyTurn;
+	void OnBidChanged (bool isMyTurn) {
+		Debug.LogWarning ("OnBidChangedEvent: " + isMyTurn);
+		//enterBidButton.interactable = isMyTurn;
 		callOutBluffButton.interactable = false;
 		declareBidSpotOnButton.interactable = false;
 	}
 
-	void OnItIsMyTurn (bool isMyTurn) {
+	void OnItIsMyTurn (bool isMyTurn, bool bidAlreadyExists) {
+		Debug.LogWarning ("ItIsMyTurn: " + isMyTurn);
 		enterBidButton.interactable = isMyTurn;
-		callOutBluffButton.interactable = isMyTurn;
-		declareBidSpotOnButton.interactable = isMyTurn;
+
+		if (bidAlreadyExists) {
+			callOutBluffButton.interactable = isMyTurn;
+			declareBidSpotOnButton.interactable = isMyTurn;
+		} else {
+			callOutBluffButton.interactable = false;
+			declareBidSpotOnButton.interactable = false;
+		}
+
 	}
 
-	void OnShowControls (bool show) {
+	/*void OnShowControls (bool show) {
 		Debug.Log ("OnShowControls: " + show);
 		enterBidButton.interactable = show;
 		callOutBluffButton.interactable = show;
@@ -73,17 +84,17 @@ public class MyControlBar : MonoBehaviour {
 
 		if (show) {
 
-			/*enterBidText.color = ColorMethods.visibleDarkBrownColor;
+			enterBidText.color = ColorMethods.visibleDarkBrownColor;
 			callOutBluffText.color = ColorMethods.visibleDarkBrownColor;
 			declareBidSpotOnText.color = ColorMethods.visibleDarkBrownColor;
 			lookUpDicesText.color = ColorMethods.visibleDarkBrownColor;
-			hideDicesText.color = ColorMethods.visibleDarkBrownColor;*/
+			hideDicesText.color = ColorMethods.visibleDarkBrownColor;
 		} else {
-			/*enterBidText.color = ColorMethods.transparentBlackColor;
+			enterBidText.color = ColorMethods.transparentBlackColor;
 			callOutBluffText.color = ColorMethods.transparentBlackColor;
 			declareBidSpotOnText.color = ColorMethods.transparentBlackColor;
 			lookUpDicesText.color = ColorMethods.transparentBlackColor;
-			hideDicesText.color = ColorMethods.transparentBlackColor;*/
+			hideDicesText.color = ColorMethods.transparentBlackColor;
 		}
 	}
 
@@ -93,7 +104,7 @@ public class MyControlBar : MonoBehaviour {
 		callOutBluffButton.interactable = show;
 		declareBidSpotOnButton.interactable = show;
 
-		/*if (show) {
+		if (show) {
 			enterBidText.color = ColorMethods.visibleDarkBrownColor;
 			callOutBluffText.color = ColorMethods.visibleDarkBrownColor;
 			declareBidSpotOnText.color = ColorMethods.visibleDarkBrownColor;
@@ -101,15 +112,15 @@ public class MyControlBar : MonoBehaviour {
 			enterBidText.color = ColorMethods.transparentBlackColor;
 			callOutBluffText.color = ColorMethods.transparentBlackColor;
 			declareBidSpotOnText.color = ColorMethods.transparentBlackColor;
-		}*/
-	}
+		}
+	}*/
 
 	void OnDestroy () {
 		//GamePlayer.ShowControlsEvent -= OnShowControls;
 
 		Table.UnlockControlsEvent -= OnUnlockControls;
 		Table.LockControlsEvent -= OnLockControls;
-		Table.BidDoesNotExistEvent -= OnBidDoesNotExist;
+		Table.OnBidChangedEvent -= OnBidChanged;
 		GamePlayer.ItIsMyTurnEvent -= OnItIsMyTurn;
 	}
 

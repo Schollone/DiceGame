@@ -24,7 +24,7 @@ namespace MW_DiceGame {
 
 		public override void OnStartServer () {
 			base.OnStartServer ();
-			Debug.LogWarning ("OnStartServer -- SpawnManager foldername = " + gamePlayer.playerName);
+			//Debug.LogWarning ("OnStartServer -- SpawnManager foldername = " + gamePlayer.playerName);
 
 			/*string folderName = gamePlayer.playerName;
 			container = GetContainer (folderName);
@@ -34,7 +34,7 @@ namespace MW_DiceGame {
 
 		public override void OnStartClient () {
 			base.OnStartClient ();
-			Debug.Log ("OnStartClient -- SpawnManager");
+			//Debug.Log ("OnStartClient -- SpawnManager");
 			string folderName = gamePlayer.playerName;
 			container = GetContainer (folderName);
 
