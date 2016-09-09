@@ -14,33 +14,69 @@ public class Bidding : AbstractState {
 	}
 
 
-	public override void Execute () {
-		table.ThrowDices ();
-
-		Debug.LogWarning ("Reset Current Bid");
+	public override void OnEnter () {
+		Debug.LogWarning ("OnEnter - Reset Current Bid");
 		table.ResetBid ();
-		// reset bid view ------------------------------------------
 
-		//table.NextPlayer ();
-		var player = table.GetCurrentPlayer ();
-		player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true);
-		//Transform player = table.GetCurrentPlayer ();
-		//player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true); // called twice
+		Debug.Log ("OnEnter - UnlockControlButtons");
+		//SendToClients (ActionMsg.UnlockControlButtons);
+		table.SendUnlockControlsEvent ();
+
+		Debug.Log ("OnEnter - ThrowDices");
+		ThrowDices (table.players);
+
+		Debug.Log ("OnEnter - SetPlayerToBegin");
+		SetPlayerToBegin ();
 	}
 
-	public override void StartGame () {
-		//Transform player = table.GetCurrentPlayer ();
-		//player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true);
+	public override void Execute () {
+		Debug.Log ("Execute");
+		action.ExecuteAction (table);
+	}
+
+	public override void OnExit () {
+		Debug.Log ("OnExit - LockControlButtons");
+		//SendToClients (ActionMsg.LockControlButtons);
+		table.SendLockControlsEvent ();
+
+		Debug.Log ("OnExit - HideAllDices");
+		HideAllDices ();
 	}
 
 	public override void NextPlayer () {
-		//table.SetGameState (new Bidding (table));
-		//action.ExecuteAction (table);
+		table.NextPlayerHisTurn ();
 	}
 
 	public override void EnterEvaluationPhase () {
 		table.SetGameState (new EvaluationPhase (table, action));
 	}
 
-}
 
+
+	void HideAllDices () {
+		for (int i = 0; i < table.players.childCount; i++) {
+			var player = table.players.GetChild (i);
+			var diceCup = player.GetComponent<DiceCup> ();
+			diceCup.HideDices ();
+		}
+	}
+
+	void SetPlayerToBegin () {
+		var player = table.GetCurrentPlayer ();
+		player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true);
+	}
+
+	/*void SendToClients (short msgType) {
+		Debug.Log ("SendToClients");
+		ActionMessage msg = new ActionMessage ();
+		NetworkServer.SendToAll (msgType, msg);
+	}*/
+
+	void ThrowDices (Transform players) {
+		Debug.Log ("ThrowDices " + players.childCount);
+		for (int i = 0; i < players.childCount; i++) {
+			Transform player = players.GetChild (i);
+			player.GetComponent<DiceCup> ().CmdFillDiceCupWithDices ();
+		}
+	}
+}

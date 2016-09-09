@@ -21,23 +21,17 @@ namespace MW_DiceGame {
 
 		public delegate void ColorDelegate (Slots targetSlot, Colors newColor);
 
-		//public delegate void ButtonControlsDelegate (bool isMyTurn);
-
 		public static event PlayerNameDelegate PlayerNameChangedEvent;
 		public static event ColorDelegate ColorChangedEvent;
 
-		//public static event ButtonControlsDelegate ShowControlsEvent;
-		//public static event ButtonControlsDelegate HideControlsEvent;
-		//public static event ButtonControlsDelegate ActiveControlsEvent;
-		//public static event ButtonControlsDelegate PassiveControlsEvent;
 
 
-		public delegate void NextPlayerDelegate (bool isMyTurn, bool bidAlreadyExists);
+		public delegate void ControlbarButtonsDelegate (bool isMyTurn, bool bidAlreadyExists);
 
-		public static event NextPlayerDelegate ItIsMyTurnEvent;
-
-		//IAction actionStrategy;
-
+		public static event ControlbarButtonsDelegate EventUnlockControls;
+		public static event ControlbarButtonsDelegate EventLockControls;
+		public static event ControlbarButtonsDelegate EventOnBidChanged;
+		public static event ControlbarButtonsDelegate ItIsMyTurnEvent;
 
 
 		public override void OnStartClient () {
@@ -59,44 +53,15 @@ namespace MW_DiceGame {
 		public override void OnStartLocalPlayer () {
 			base.OnStartLocalPlayer ();
 
-			//BidController.OnEnterBid += OnEnterBid;
-			//EventManager.OnCallOutBluff += OnCallOutBluff;
-			//EventManager.OnDeclareSpotOn += OnDeclareBidSpotOn;
-
-			//actionStrategy = null;
-
 			cam.gameObject.SetActive (true);
 		}
 
-		public void OnIsMyTurn (bool isMyTurn) {
-			this.isMyTurn = isMyTurn;
+		void Start () {
+			Debug.Log ("Start GamePlayer - Client active: " + NetworkClient.active + " Server active: " + NetworkServer.active);
 
-			if (!isLocalPlayer) {
-				return;
-			}
-
-			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
-				
-				/*if (!Table.singleton.BidAlreadyExists ()) {
-					Debug.Log (playerName + ". Das Gebot existiert nicht. Sende Event! isMyTurn=" + isMyTurn);
-					Table.singleton.SendOnBidChangedEvent (isMyTurn);
-
-				}*/
-				if (ItIsMyTurnEvent != null) {
-					Debug.Log (playerName + ". Das Gebot existiert bereits. Sende Event! isMyTurn=" + isMyTurn);
-					//Debug.Log (playerName + " --> ItIsMyTurnEvent: " + isMyTurn);
-					ItIsMyTurnEvent (isMyTurn, Table.singleton.BidAlreadyExists ());
-				}
-			}
-			/* else {
-				if (ShowControlsEvent != null) {
-					Debug.Log ("ShowControlsEvent: " + isMyTurn);
-					Debug.Log ("HideDices");
-					GetComponent<DiceCup> ().HideDices ();
-					ShowControlsEvent (isMyTurn);
-				}
-			}*/
-
+			Table.singleton.EventUnlockControls += OnUnlockControls;
+			Table.singleton.EventLockControls += OnLockControls;
+			Table.singleton.EventOnBidChanged += OnBidChanged;
 		}
 
 		void PutInContainer (string containerName, GameObject child) {
@@ -106,43 +71,6 @@ namespace MW_DiceGame {
 			}
 			child.transform.SetParent (container.transform);
 		}
-
-		/*void SetActionStrategy (IAction strategy) {
-			actionStrategy = strategy;
-		}
-
-		void OnEnterBid (Bid bidData) {
-			Bid bid = new Bid (bidData.dieFace, bidData.quantity, this.netId);
-			Debug.LogFormat ("Enter Bid {0}", bid);
-
-			SetActionStrategy (new EnterBid (bid));
-			HandleAction ();
-		}
-
-		void OnCallOutBluff () {
-			Debug.LogFormat ("Call Out Bluff");
-
-			SetActionStrategy (new CallOutBluff ());
-			HandleAction ();
-		}
-
-		void OnDeclareBidSpotOn () {
-			Debug.LogFormat ("Declare Bid Spot On");
-
-			SetActionStrategy (new DeclareBidSpotOn ());
-			HandleAction ();
-		}
-
-		void HandleAction () {
-			Debug.LogFormat ("Handle Action {0}", actionStrategy.GetType ());
-
-			// if status "Bidding"
-
-			if (isMyTurn) {
-				actionStrategy.ExecuteAction (Table.singleton);
-			}
-
-		}*/
 
 		public override string ToString () {
 			return string.Format ("[GamePlayer: playerName={0}, color={1}, slot={2}, isMyTurn={3}]", playerName, color, slotId, isMyTurn);
@@ -160,6 +88,61 @@ namespace MW_DiceGame {
 			}
 
 			this.isMyTurn = isMyTurn;
+		}
+
+
+
+
+
+
+
+
+
+		void OnUnlockControls () {
+			//if (isLocalPlayer) {
+			Debug.Log ("Aktiviere Look und Hide Buttons");
+			if (EventUnlockControls != null) {
+				EventUnlockControls (isMyTurn, Table.singleton.currentBid.Exists ());
+			}
+			//}
+		}
+
+		void OnLockControls () {
+			//if (isLocalPlayer) {
+			Debug.Log ("Deaktiviere alle Buttons");
+			if (EventLockControls != null) {
+				EventLockControls (isMyTurn, Table.singleton.currentBid.Exists ());
+			}
+			//}
+		}
+
+		void OnBidChanged (Bid newBid) {
+			//if (isLocalPlayer) {
+			Debug.Log ("Neues Gebot vom Server vekommen: " + newBid);
+			Table.singleton.currentBid = newBid;
+
+			if (EventOnBidChanged != null) {
+				EventOnBidChanged (isMyTurn, Table.singleton.currentBid.Exists ());
+			}
+			//}
+		}
+
+		public void OnIsMyTurn (bool isMyTurn) {
+			this.isMyTurn = isMyTurn;
+
+			if (isLocalPlayer) {
+				Debug.Log ("OnIsMyTurn - ItIsMyTurn: " + isMyTurn);
+				if (ItIsMyTurnEvent != null) {
+					ItIsMyTurnEvent (isMyTurn, Table.singleton.currentBid.Exists ());
+				}
+			}
+
+		}
+
+		void OnDestroy () {
+			Table.singleton.EventUnlockControls -= OnUnlockControls;
+			Table.singleton.EventLockControls -= OnLockControls;
+			Table.singleton.EventOnBidChanged -= OnBidChanged;
 		}
 	}
 

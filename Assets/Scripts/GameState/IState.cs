@@ -7,7 +7,11 @@ public interface IState {
 
 	void SetActionStrategy (IAction action);
 
+	void OnEnter ();
+
 	void Execute ();
+
+	void OnExit ();
 
 	void StartGame ();
 

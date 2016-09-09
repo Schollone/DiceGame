@@ -11,14 +11,23 @@ public class Preparation : AbstractState {
 		this.table = table;
 	}
 
-	public override void Execute () {
+	public override void OnEnter () {
 //		this.table.InitPlayers ();
 
 		if (table.players.childCount == 1) {
-			Debug.Log ("Only Host is ready to fill up dice cups");
-			table.StartGame ();
+			//Debug.Log ("Only Host is ready to fill up dice cups");
+			//table.StartGame ();
 		}
 	}
+
+	public override void Execute () {
+
+	}
+
+	public override void OnExit () {
+		
+	}
+
 
 	public override void StartGame () {
 		table.SetGameState (new Bidding (table, action));

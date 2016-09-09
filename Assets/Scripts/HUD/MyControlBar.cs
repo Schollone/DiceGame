@@ -5,122 +5,68 @@ using MW_DiceGame;
 
 public class MyControlBar : MonoBehaviour {
 
-	public GameObject bidController;
-	public Button enterBidButton;
 	public Button callOutBluffButton;
 	public Button declareBidSpotOnButton;
 	public Button lookUpDicesButton;
 	public Button hideDicesButton;
 
-	/*Text enterBidText;
-	Text callOutBluffText;
-	Text declareBidSpotOnText;
-	Text lookUpDicesText;
-	Text hideDicesText;*/
+	bool isMyTurn;
 
 	void Awake () {
-		//GamePlayer.ShowControlsEvent += OnShowControls;
-		//GamePlayer.ActiveControlsEvent += OnActiveControls;
-
-		Table.UnlockControlsEvent += OnUnlockControls;
-		Table.LockControlsEvent += OnLockControls;
-		Table.OnBidChangedEvent += OnBidChanged;
+		GamePlayer.EventUnlockControls += OnUnlockControls;
+		GamePlayer.EventLockControls += OnLockControls;
+		GamePlayer.EventOnBidChanged += OnBidChanged;
 		GamePlayer.ItIsMyTurnEvent += OnItIsMyTurn;
 
-
-		/*enterBidText = enterBidButton.transform.GetChild (0).GetComponent<Text> ();
-		callOutBluffText = callOutBluffButton.transform.GetChild (0).GetComponent<Text> ();
-		declareBidSpotOnText = declareBidSpotOnButton.transform.GetChild (0).GetComponent<Text> ();
-		lookUpDicesText = lookUpDicesButton.transform.GetChild (0).GetComponent<Text> ();
-		hideDicesText = hideDicesButton.transform.GetChild (0).GetComponent<Text> ();*/
+		isMyTurn = false;
 	}
 
-	void OnUnlockControls () {
-		Debug.LogWarning ("UnlockControls set true");
-		/*enterBidButton.interactable = true;
-		callOutBluffButton.interactable = true;
-		declareBidSpotOnButton.interactable = true;*/
+	void OnUnlockControls (bool isMyTurn, bool bidAlreadyExists) {
+		Debug.Log ("Aktiviere Look und Hide Buttons");
 		lookUpDicesButton.interactable = true;
 		hideDicesButton.interactable = true;
+		lookUpDicesButton.gameObject.SetActive (true);
 	}
 
-	void OnLockControls () {
-		Debug.LogWarning ("LockControls set false");
-		enterBidButton.interactable = false;
+	void OnLockControls (bool isMyTurn, bool bidAlreadyExists) {
+		Debug.Log ("Deaktiviere alle Buttons");
+		//enterBidButton.interactable = false;
 		callOutBluffButton.interactable = false;
 		declareBidSpotOnButton.interactable = false;
 		lookUpDicesButton.interactable = false;
 		hideDicesButton.interactable = false;
 	}
 
-	void OnBidChanged (bool isMyTurn) {
-		Debug.LogWarning ("OnBidChangedEvent: " + isMyTurn);
-		//enterBidButton.interactable = isMyTurn;
-		callOutBluffButton.interactable = false;
-		declareBidSpotOnButton.interactable = false;
+	void OnBidChanged (bool isMyTurn, bool bidAlreadyExists) {
+		Debug.Log ("Deaktiviere Action Buttons - ItIsMyTurn: " + isMyTurn);
+
+		UpdateActionButtons (bidAlreadyExists);
 	}
 
 	void OnItIsMyTurn (bool isMyTurn, bool bidAlreadyExists) {
-		Debug.LogWarning ("ItIsMyTurn: " + isMyTurn);
-		enterBidButton.interactable = isMyTurn;
+		Debug.LogWarning ("Aktualisiere Action Buttons - ItIsMyTurn: " + isMyTurn);
 
+		this.isMyTurn = isMyTurn;
+
+		UpdateActionButtons (bidAlreadyExists);
+	}
+
+	void UpdateActionButtons (bool bidAlreadyExists) {
 		if (bidAlreadyExists) {
+			//enterBidButton.interactable = false;
 			callOutBluffButton.interactable = isMyTurn;
 			declareBidSpotOnButton.interactable = isMyTurn;
 		} else {
+			//enterBidButton.interactable = isMyTurn;
 			callOutBluffButton.interactable = false;
 			declareBidSpotOnButton.interactable = false;
 		}
-
 	}
-
-	/*void OnShowControls (bool show) {
-		Debug.Log ("OnShowControls: " + show);
-		enterBidButton.interactable = show;
-		callOutBluffButton.interactable = show;
-		declareBidSpotOnButton.interactable = show;
-		lookUpDicesButton.interactable = show;
-		hideDicesButton.interactable = show;
-
-		if (show) {
-
-			enterBidText.color = ColorMethods.visibleDarkBrownColor;
-			callOutBluffText.color = ColorMethods.visibleDarkBrownColor;
-			declareBidSpotOnText.color = ColorMethods.visibleDarkBrownColor;
-			lookUpDicesText.color = ColorMethods.visibleDarkBrownColor;
-			hideDicesText.color = ColorMethods.visibleDarkBrownColor;
-		} else {
-			enterBidText.color = ColorMethods.transparentBlackColor;
-			callOutBluffText.color = ColorMethods.transparentBlackColor;
-			declareBidSpotOnText.color = ColorMethods.transparentBlackColor;
-			lookUpDicesText.color = ColorMethods.transparentBlackColor;
-			hideDicesText.color = ColorMethods.transparentBlackColor;
-		}
-	}
-
-	void OnActiveControls (bool show) {
-		Debug.Log ("OnActiveControls: " + show);
-		enterBidButton.interactable = show;
-		callOutBluffButton.interactable = show;
-		declareBidSpotOnButton.interactable = show;
-
-		if (show) {
-			enterBidText.color = ColorMethods.visibleDarkBrownColor;
-			callOutBluffText.color = ColorMethods.visibleDarkBrownColor;
-			declareBidSpotOnText.color = ColorMethods.visibleDarkBrownColor;
-		} else {
-			enterBidText.color = ColorMethods.transparentBlackColor;
-			callOutBluffText.color = ColorMethods.transparentBlackColor;
-			declareBidSpotOnText.color = ColorMethods.transparentBlackColor;
-		}
-	}*/
 
 	void OnDestroy () {
-		//GamePlayer.ShowControlsEvent -= OnShowControls;
-
-		Table.UnlockControlsEvent -= OnUnlockControls;
-		Table.LockControlsEvent -= OnLockControls;
-		Table.OnBidChangedEvent -= OnBidChanged;
+		GamePlayer.EventUnlockControls -= OnUnlockControls;
+		GamePlayer.EventLockControls -= OnLockControls;
+		GamePlayer.EventOnBidChanged -= OnBidChanged;
 		GamePlayer.ItIsMyTurnEvent -= OnItIsMyTurn;
 	}
 

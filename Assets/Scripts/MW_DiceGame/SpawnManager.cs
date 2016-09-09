@@ -10,6 +10,8 @@ namespace MW_DiceGame {
 
 		public GamePlayer gamePlayer;
 		public GameObject spawnablePrefab;
+		[SyncVar (hook = "OnReadyChange")]
+		public bool ready;
 		public int poolSize = 5;
 
 		public GameObject container;
@@ -46,10 +48,31 @@ namespace MW_DiceGame {
 			base.OnStartLocalPlayer ();
 
 			CmdSpawnDices ();
-			if (!isServer) {
-				SendClientReady (ActionMsg.ClientReady);
-			}
+
+			CmdClientIsReady ();
+			//if (!isServer) {
+
+			//} else {
+				
+			//}
 		}
+
+		void Start () {
+			//SendClientReady (ActionMsg.ClientReady);
+		}
+
+		[Command]
+		void CmdClientIsReady () {
+			this.ready = true;
+		}
+
+
+		void OnReadyChange (bool ready) {
+			Debug.Log ("OnReadyChange " + ready);
+			this.ready = ready;
+		}
+
+
 
 
 		GameObject SpawnHandler (Vector3 position, NetworkHash128 assedId) {
@@ -98,7 +121,11 @@ namespace MW_DiceGame {
 
 			var msg = new ActionMessage ();
 			msg.connectionId = client.connection.connectionId;
-			client.Send (action, msg);
+			if (isServer) {
+				//Table.singleton.ServerIsReady ();
+			} else {
+				client.Send (action, msg);
+			}
 		}
 
 		public DieFaces[] GetDieFacesFromPlayer () {

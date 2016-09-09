@@ -14,24 +14,26 @@ public class EnterBid : IAction {
 	#region IAction implementation
 
 	public void ExecuteAction (Table table) {
-		if (table.BidAlreadyExists ()) {
+		if (table.currentBid.Exists ()) {
 			if (table.currentBid.CanBeReplacedWith (bid)) {
 				table.currentBid = bid;
-				SendToAll ();
+				table.ChangeBidOnClients (bid);
+				//SendToClients ();
 			}
 		} else {
 			table.currentBid = bid;
-			SendToAll ();
+			table.ChangeBidOnClients (bid);
+			//SendToClients ();
 		}
 	}
 
 	#endregion
 
-	void SendToAll () {
-		Debug.Log ("SendToAll new Bid");
-		ActionMessage msg = new ActionMessage ();
+	void SendToClients () {
+		Debug.Log ("Bestätige den Clients das neue Gebot");
+		/*ActionMessage msg = new ActionMessage ();
 		msg.bid = bid;
-		NetworkServer.SendToAll (ActionMsg.EnterBid, msg);
+		NetworkServer.SendToAll (ActionMsg.EnterBid, msg);*/
 	}
 
 }

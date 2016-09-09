@@ -15,28 +15,28 @@ public class AbstractState : IState {
 		this.action = action;
 	}
 
+	public virtual void OnEnter () {
+	}
+
 	public virtual void Execute () {
-		
+	}
+
+	public virtual void OnExit () {
 	}
 
 	public virtual void StartGame () {
-		
 	}
 
 	public virtual void NextPlayer () {
-		
 	}
 
 	public virtual void EnterEvaluationPhase () {
-		
 	}
 
 	public virtual void EnterBidding () {
-		
 	}
 
 	public virtual void LeaveGame () {
-		
 	}
 
 	#endregion

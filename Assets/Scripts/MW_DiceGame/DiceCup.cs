@@ -154,9 +154,19 @@ namespace MW_DiceGame {
 				return;
 			}
 			lookBtn.SetActive (false);
-			hideBtn.SetActive (true);
+			hideBtn.SetActive (false);
 			anim.SetTrigger ("Evaluate");
 			//anim.SetBool ("looking", true);
+		}
+
+		public void EvaluateDices () {
+			if (!isLocalPlayer) {
+				return;
+			}
+
+			lookBtn.SetActive (false);
+			hideBtn.SetActive (false);
+			anim.SetTrigger ("Evaluate");
 		}
 
 		public void LookUpDices () {
