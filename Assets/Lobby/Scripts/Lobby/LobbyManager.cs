@@ -6,6 +6,8 @@ using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.Networking.Types;
 using UnityEngine.Networking.Match;
 using System.Collections;
+using System.Net;
+using System.Net.Sockets;
 
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
@@ -44,6 +46,8 @@ namespace Prototype.NetworkLobby {
 		public Text statusInfo;
 		public Text hostInfo;
 
+		public Text localIpAddress;
+
 		//Client numPlayers from NetworkManager is always 0, so we count (throught connect/destroy in LobbyPlayer) the number
 		//of players, so that even client know how many player there is.
 		[HideInInspector]
@@ -71,6 +75,8 @@ namespace Prototype.NetworkLobby {
 			DontDestroyOnLoad (gameObject);
 
 			SetServerInfo ("Offline", "None");
+
+			SetLocalIPAddress ();
 		}
 
 		public override void OnLobbyClientSceneChanged (NetworkConnection conn) {
@@ -412,6 +418,21 @@ namespace Prototype.NetworkLobby {
 
 		public void ResumeGame () {
 			pausePanel.gameObject.SetActive (false);
+		}
+
+
+
+		void SetLocalIPAddress () {
+			IPHostEntry host;
+			string localIP = "";
+			host = Dns.GetHostEntry (Dns.GetHostName ());
+			foreach (IPAddress ip in host.AddressList) {
+				if (ip.AddressFamily == AddressFamily.InterNetwork) {
+					localIP = ip.ToString ();
+					break;
+				}
+			}
+			localIpAddress.text = localIP;
 		}
 	}
 }
