@@ -16,6 +16,9 @@ namespace MW_DiceGame {
 		public bool isMyTurn;
 
 		public Camera cam;
+		public Camera evaluationCam;
+
+		public SkinnedMeshRenderer cowboyRenderer;
 
 		public delegate void PlayerNameDelegate (Slots targetSlot, string newPlayerName);
 
@@ -47,6 +50,10 @@ namespace MW_DiceGame {
 				ColorChangedEvent (slotId, color);
 			}
 
+			string path = "Player/Cowboy_" + color.ToString ();
+			Material mat = Resources.Load<Material> (path);
+			cowboyRenderer.material = mat;
+
 			//OnIsMyTurn (isMyTurn);
 		}
 
@@ -71,6 +78,23 @@ namespace MW_DiceGame {
 			}
 			child.transform.SetParent (container.transform);
 		}
+
+		/*[Command]
+		public void CmdEliminatePlayer () {
+			RpcEliminatePlayer ();
+		}*/
+
+		[ClientRpc]
+		public void RpcEliminatePlayer (NetworkInstanceId id) {
+			if (netId.Equals (id)) {
+				PutInContainer ("Eliminated", gameObject);
+				if (isLocalPlayer) {
+					GetComponent<DiceCup> ().Eliminated ();
+				}
+			}
+
+		}
+
 
 		public override string ToString () {
 			return string.Format ("[GamePlayer: playerName={0}, color={1}, slot={2}, isMyTurn={3}]", playerName, color, slotId, isMyTurn);

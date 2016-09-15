@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 using MW_DiceGame;
 
@@ -6,10 +7,10 @@ public class EvaluationPhase : AbstractState {
 
 	Table table;
 
-	public EvaluationPhase (Table table, IAction action) {
+	public EvaluationPhase (Table table) {
 		Debug.Log ("EvaluationPhase");
 		this.table = table;
-		this.action = action;
+		this.action = null;
 	}
 
 
@@ -17,28 +18,35 @@ public class EvaluationPhase : AbstractState {
 		Debug.Log ("OnEnter - CountDicesOnTable");
 		CountDicesOnTable (table.players);
 
-		Debug.Log ("OnEnter - LookUpAllDices");
-		table.LookUpAllDices ();
 
-		//action.ExecuteAction (table);
+		table.RpcLookUpAllDices ();
+		//Debug.Log ("OnEnter - LookUpAllDices");
+
 	}
 
-	public override void Execute () {
+	public override void Execute (IAction action = null) {
 		Debug.Log ("Execute");
-		action.ExecuteAction (table);
+		base.Execute (action);
+
+		table.RpcEnablePlayerCams ();
+
+		if (action != null) {
+			action.ExecuteAction (table);
+		}
 	}
 
 	public override void OnExit () {
 		Debug.Log ("OnExit");
+		//table.RpcDisablePlayerCams ();
 		//action.ExecuteAction (table);
 	}
 
 	public override void EnterBidding () {
-		table.SetGameState (new Bidding (table, action));
+		table.SetGameState (table.bidding);
 	}
 
 	public override void LeaveGame () {
-		table.SetGameState (new GameOver (table));
+		table.SetGameState (table.gameOver);
 	}
 
 

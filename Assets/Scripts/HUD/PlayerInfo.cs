@@ -7,8 +7,9 @@ using MW_DiceGame;
 public class PlayerInfo : MonoBehaviour {
 
 	public Text playerNameText;
+	public Outline playerNameOutline;
+	public GameObject dieFaceContainer;
 	public Image diceQuantityAsDieFace;
-	public Outline outline;
 	public Slots slot;
 
 	Colors color = Colors.Black;
@@ -25,7 +26,8 @@ public class PlayerInfo : MonoBehaviour {
 	}
 
 	void Start () {
-		diceQuantityAsDieFace.enabled = true;
+		//diceQuantityAsDieFace.enabled = true;
+		//dieFaceContainer.SetActive (true);
 	}
 
 	void OnPlayerNameChanged (Slots targetSlot, string newPlayerName) {
@@ -42,7 +44,7 @@ public class PlayerInfo : MonoBehaviour {
 			playerNameText.color = color.GetColor ();
 			Debug.LogWarning ("OnColorChanged: " + newColor + " -> " + (newColor.Equals (Colors.Black)));
 			if (newColor.Equals (Colors.Black)) {
-				outline.effectColor = new Color (1f, 1f, 1f, 0.5f);
+				playerNameOutline.effectColor = new Color (1f, 1f, 1f, 0.5f);
 			}
 
 			Sprite dieFace = color.GetDieFaceImage (dicesLeft);
@@ -54,11 +56,13 @@ public class PlayerInfo : MonoBehaviour {
 		if (slot == targetSlot) {
 			this.dicesLeft = dicesLeft;
 
+			Debug.Log ("Dices Left: " + dicesLeft);
 			if (dicesLeft > 0) {
 				Sprite dieFace = color.GetDieFaceImage (dicesLeft);
 				diceQuantityAsDieFace.sprite = dieFace;
 			} else {
-				diceQuantityAsDieFace.enabled = false;
+				//diceQuantityAsDieFace.enabled = false;
+				dieFaceContainer.SetActive (false);
 			}
 
 		}

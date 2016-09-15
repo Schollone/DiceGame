@@ -68,6 +68,10 @@ namespace MW_DiceGame {
 
 		}
 
+		void Start () {
+			//Table.singleton.EventLookUpAllDices += OnLookUpAllDicesEvent;
+		}
+
 		void OnAvailableDicesChanged (int availableDices) {
 			//Debug.Log ("DiceCup - OnAvailableDicesChange " + availableDices);
 			this.availableDices = availableDices;
@@ -98,24 +102,42 @@ namespace MW_DiceGame {
 		[Command]
 		public void CmdDecreaseDiceFromPlayer () {
 			if (availableDices > 0) {
-				availableDices = availableDices - 1;
-
-				GameObject go = spawnManager.container.transform.GetChild (0).gameObject;
-
-				Debug.Log ("DecreaseDice: " + go);
-				spawnManager.UnSpawnHandler (go);
-				NetworkServer.UnSpawn (go);
-				//NetworkServer.Destroy (go);
-
-				//if (OnLostDice != null) {
-				//OnLoseDice ();
-				//}
-
-				if (availableDices <= 0) {
-					Debug.Log ("Eliminate Player");
-				}
-
+				Invoke ("DecreaseDice", 4f);
 			}
+		}
+
+		void DecreaseDice () {
+			Debug.Log ("DecreaseDice " + Time.fixedTime);
+			availableDices = availableDices - 1;
+
+			GameObject go = spawnManager.container.transform.GetChild (0).gameObject;
+
+			//spawnManager.unspawnParticleEffectPrefab.GetComponent<ParticleSystem> ().startColor = gamePlayer.color.GetColor ();
+			PlayDiceSmoke (go.transform.position);
+
+			spawnManager.UnSpawnHandler (go);
+			NetworkServer.UnSpawn (go);
+
+			if (availableDices <= 0) {
+				Debug.Log ("Eliminate Player");
+				gamePlayer.RpcEliminatePlayer (netId);
+				if (Table.singleton.players.childCount <= 1) {
+					Debug.Log ("GameOver");
+					Table.singleton.LeaveGame ();
+				}
+			}
+		}
+
+		void PlayDiceSmoke (Vector3 startPosition) {
+			GameObject diceSmoke = GameObject.Find ("DiceSmoke");
+			if (diceSmoke == null) {
+				diceSmoke = (GameObject)GameObject.Instantiate (spawnManager.unspawnParticleEffectPrefab, startPosition, Quaternion.Euler (new Vector3 (-90f, 0f, 0f)));
+			}
+			diceSmoke.transform.position = startPosition;
+			diceSmoke.SetActive (true);
+			var particleSystem = diceSmoke.GetComponent<ParticleSystem> ();
+			particleSystem.startColor = gamePlayer.color.GetColor ();
+			particleSystem.Play ();
 		}
 
 		[Command]
@@ -147,7 +169,7 @@ namespace MW_DiceGame {
 			//diceGO.GetComponent<Rigidbody> ().AddForce (diceSpawnPoints.up * speed * Time.deltaTime, ForceMode.Impulse);
 		}
 
-		[ClientRpc]
+		/*[ClientRpc]
 		public void RpcLookUpDices () {
 			Debug.LogFormat ("RPC : Look Up all Dices");
 			if (!isLocalPlayer) {
@@ -157,30 +179,74 @@ namespace MW_DiceGame {
 			hideBtn.SetActive (false);
 			anim.SetTrigger ("Evaluate");
 			//anim.SetBool ("looking", true);
-		}
+		}*/
 
-		public void EvaluateDices () {
+		public void Eliminated () {
 			if (!isLocalPlayer) {
 				return;
 			}
 
 			lookBtn.SetActive (false);
 			hideBtn.SetActive (false);
+
+			CmdEliminated ();
+		}
+
+		[Command]
+		void CmdEliminated () {
+			RpcEliminated ();
+		}
+
+		[ClientRpc]
+		void RpcEliminated () {
+			anim.SetTrigger ("Eliminate");
+		}
+
+		public void EvaluateDices () {
+			Debug.LogWarning ("EvaluateDices - DiceCup isLocalPlayer: " + isLocalPlayer);
+			if (!isLocalPlayer) {
+				return;
+			}
+
+			lookBtn.SetActive (false);
+			hideBtn.SetActive (false);
+			CmdStartAnimationEvaluation ();
+		}
+
+		[Command]
+		void CmdStartAnimationEvaluation () {
+			RpcStartAnimationEvaluation ();
+		}
+
+		[ClientRpc]
+		void RpcStartAnimationEvaluation () {
 			anim.SetTrigger ("Evaluate");
 		}
 
 		public void LookUpDices () {
+			Debug.Log ("LookUpDices");
 			//Debug.LogFormat ("Look Up Dices");
 			if (!isLocalPlayer) {
 				return;
 			}
 
-			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
-				lookBtn.SetActive (false);
-				hideBtn.SetActive (true);
-				//hideBtn.GetComponent<Button> ().interactable = true;
-				anim.SetBool ("looking", true);
-			}
+			Debug.Log ("isLocalPlayer true");
+			//if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
+			lookBtn.SetActive (false);
+			hideBtn.SetActive (true);
+			//hideBtn.GetComponent<Button> ().interactable = true;
+			CmdStartAnimationLookUp ();
+			//}
+		}
+
+		[Command]
+		void CmdStartAnimationLookUp () {
+			RpcStartAnimationLookUp ();
+		}
+
+		[ClientRpc]
+		void RpcStartAnimationLookUp () {
+			anim.SetBool ("looking", true);
 		}
 
 		public void HideDices () {
@@ -188,18 +254,27 @@ namespace MW_DiceGame {
 			if (!isLocalPlayer) {
 				return;
 			}
+				
+			lookBtn.SetActive (true);
+			//lookBtn.GetComponent<Button> ().interactable = true;
+			hideBtn.SetActive (false);
+			CmdStartAnimationHide ();
+		}
 
-			if (Table.singleton.theGameState.Equals (Table.GameState.Bidding)) {
-				lookBtn.SetActive (true);
-				//lookBtn.GetComponent<Button> ().interactable = true;
-				hideBtn.SetActive (false);
-				anim.SetBool ("looking", false);
-			}
+		[Command]
+		void CmdStartAnimationHide () {
+			RpcStartAnimationHide ();
+		}
+
+		[ClientRpc]
+		void RpcStartAnimationHide () {
+			anim.SetBool ("looking", false);
 		}
 
 		void OnDestroy () {
 			EventManager.OnLook -= LookUpDices;
 			EventManager.OnHide -= HideDices;
+			//Table.singleton.EventLookUpAllDices -= OnLookUpAllDicesEvent;
 		}
 
 		void OnGUI () {
@@ -209,7 +284,7 @@ namespace MW_DiceGame {
 			s.normal.textColor = Color.white;
 
 			GUI.color = Color.white;
-			GUI.Label (rect1, gamePlayer.ToString () + " -> Dices: " + availableDices.ToString (), s);
+			GUI.Label (rect1, gamePlayer.playerName + " -> Dices: " + availableDices.ToString (), s);
 
 			if (dices.Length == 0) {
 				return;

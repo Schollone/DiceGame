@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 
 public class AbstractState : IState {
@@ -7,18 +8,21 @@ public class AbstractState : IState {
 
 	#region IState implementation
 
-	public virtual IAction GetActionStrategy () {
+	/*public virtual IAction GetActionStrategy () {
 		return this.action;
 	}
 
 	public virtual void SetActionStrategy (IAction action) {
 		this.action = action;
-	}
+	}*/
 
 	public virtual void OnEnter () {
 	}
 
-	public virtual void Execute () {
+	public virtual void Execute (IAction action = null) {
+		if (action != null) {
+			this.action = action;
+		}
 	}
 
 	public virtual void OnExit () {

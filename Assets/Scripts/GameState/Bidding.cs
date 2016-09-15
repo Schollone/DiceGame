@@ -7,10 +7,10 @@ public class Bidding : AbstractState {
 
 	Table table;
 
-	public Bidding (Table table, IAction action) {
+	public Bidding (Table table) {
 		Debug.Log ("Bidding");
 		this.table = table;
-		this.action = action;
+		this.action = null;
 	}
 
 
@@ -29,9 +29,11 @@ public class Bidding : AbstractState {
 		SetPlayerToBegin ();
 	}
 
-	public override void Execute () {
+	public override void Execute (IAction action = null) {
 		Debug.Log ("Execute");
-		action.ExecuteAction (table);
+		if (action != null) {
+			action.ExecuteAction (table);
+		}
 	}
 
 	public override void OnExit () {
@@ -40,7 +42,7 @@ public class Bidding : AbstractState {
 		table.SendLockControlsEvent ();
 
 		Debug.Log ("OnExit - HideAllDices");
-		HideAllDices ();
+		table.RpcHideAllDices ();
 	}
 
 	public override void NextPlayer () {
@@ -48,18 +50,12 @@ public class Bidding : AbstractState {
 	}
 
 	public override void EnterEvaluationPhase () {
-		table.SetGameState (new EvaluationPhase (table, action));
+		table.SetGameState (table.evaluationPhase);
 	}
 
 
 
-	void HideAllDices () {
-		for (int i = 0; i < table.players.childCount; i++) {
-			var player = table.players.GetChild (i);
-			var diceCup = player.GetComponent<DiceCup> ();
-			diceCup.HideDices ();
-		}
-	}
+
 
 	void SetPlayerToBegin () {
 		var player = table.GetCurrentPlayer ();

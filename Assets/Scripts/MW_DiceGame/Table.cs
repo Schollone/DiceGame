@@ -21,12 +21,16 @@ namespace MW_DiceGame {
 
 		public delegate void BidButtonsDelegate (Bid newBid);
 
+		public delegate void DiceHandlingDelegate ();
+
 		[SyncEvent]
 		public event ControlbarButtonsDelegate EventUnlockControls;
 		[SyncEvent]
 		public event ControlbarButtonsDelegate EventLockControls;
 		[SyncEvent]
 		public event BidButtonsDelegate EventOnBidChanged;
+		[SyncEvent]
+		public event DiceHandlingDelegate EventLookUpAllDices;
 
 
 		[SyncVar (hook = "OnGameStateChange")]
@@ -38,15 +42,20 @@ namespace MW_DiceGame {
 
 		public static Table singleton;
 
-		public Transform players;
+		[HideInInspector] public Transform players;
 		IState gameState;
 		int playerIndex = 0;
-		public IDictionary<DieFaces, int> dieFaceMap;
+		[HideInInspector] public IDictionary<DieFaces, int> dieFaceMap;
 		int clientsReadyCount = 0;
 
-
-
-
+		[HideInInspector]
+		public Preparation preparation;
+		[HideInInspector]
+		public Bidding bidding;
+		[HideInInspector]
+		public EvaluationPhase evaluationPhase;
+		[HideInInspector]
+		public GameOver gameOver;
 
 		// ----- Callbacks --------------------------------------------------------------------------------------------------------------------------
 
@@ -58,6 +67,11 @@ namespace MW_DiceGame {
 			}
 
 			dieFaceMap = new Dictionary<DieFaces, int> (Bid.maxBidDieFaceValue);
+
+			this.preparation = new Preparation (this);
+			this.bidding = new Bidding (this);
+			this.evaluationPhase = new EvaluationPhase (this);
+			this.gameOver = new GameOver (this);
 		}
 
 		public override void OnStartServer () {
@@ -220,8 +234,8 @@ namespace MW_DiceGame {
 			Debug.Log ("Server erhält Anfrage für ein neues Gebot: " + msg.bid);
 
 			if (MayAct (msg)) {
-				gameState.SetActionStrategy (new EnterBid (msg.bid));
-				Execute ();
+				//gameState.SetActionStrategy (new EnterBid (msg.bid));
+				Execute (new EnterBid (msg.bid));
 				NextPlayer ();
 			}
 		}
@@ -233,8 +247,9 @@ namespace MW_DiceGame {
 
 			if (MayAct (msg)) {
 				if (currentBid.Exists ()) {
-					gameState.SetActionStrategy (new CallOutBluff ());
+					//gameState.SetActionStrategy (new CallOutBluff ());
 					EnterEvaluationPhase ();
+					Execute (new CallOutBluff ());
 				}
 			}
 		}
@@ -246,8 +261,9 @@ namespace MW_DiceGame {
 
 			if (MayAct (msg)) {
 				if (currentBid.Exists ()) {
-					gameState.SetActionStrategy (new DeclareBidSpotOn ());
+					//gameState.SetActionStrategy (new DeclareBidSpotOn ());
 					EnterEvaluationPhase ();
+					Execute (new DeclareBidSpotOn ());
 				}
 			}
 		}
@@ -280,14 +296,14 @@ namespace MW_DiceGame {
 		}
 
 		[Server]
-		public void Execute () {
-			this.gameState.Execute ();
+		public void Execute (IAction action) {
+			this.gameState.Execute (action);
 		}
 
 		[Server]
 		public void StartGame () {
 			Debug.LogWarning ("StartGame");
-			SetGameState (new Preparation (this));
+			SetGameState (preparation);
 			this.gameState.StartGame ();
 		}
 
@@ -316,7 +332,7 @@ namespace MW_DiceGame {
 
 		public void ExecuteState () {
 			if (isServer) {
-				Execute ();
+				Execute (null);
 			}
 		}
 
@@ -340,7 +356,11 @@ namespace MW_DiceGame {
 
 		[Server]
 		public Transform GetCurrentPlayer () {
-			return players.GetChild (playerIndex);
+			if (players.childCount > playerIndex) {
+				return players.GetChild (playerIndex);
+			}
+
+			return null;
 		}
 
 		[Server]
@@ -402,14 +422,35 @@ namespace MW_DiceGame {
 
 		// ----- Dices --------------------------------------------------------------------------------------------------------------------------
 
-		[Server]
-		public void LookUpAllDices () {
+		[ClientRpc]
+		public void RpcLookUpAllDices () {
 			for (int i = 0; i < players.childCount; i++) {
-				Transform player = players.GetChild (i);
-
-				DiceCup diceCup = player.GetComponent<DiceCup> ();
+				var player = players.GetChild (i);
+				var diceCup = player.GetComponent<DiceCup> ();
+				Debug.Log ("RpcLookUpAllDices");
+				//diceCup.EvaluateDices ();
+				//if (diceCup.isLocalPlayer) {
+				Debug.Log ("isLocalPlayer = " + diceCup.isLocalPlayer);
 				diceCup.EvaluateDices ();
-				diceCup.RpcLookUpDices ();
+				//}
+
+				// send to client to look up the dices
+				//if (EventLookUpAllDices != null) {
+				//Debug.Log ("Send LookUpAllDices");
+				//EventLookUpAllDices ();
+				//}
+			}
+		}
+
+		[ClientRpc]
+		public void RpcHideAllDices () {
+			for (int i = 0; i < players.childCount; i++) {
+				var player = players.GetChild (i);
+				var diceCup = player.GetComponent<DiceCup> ();
+
+				if (diceCup.isLocalPlayer) {
+					diceCup.HideDices ();
+				}
 			}
 		}
 
@@ -461,6 +502,72 @@ namespace MW_DiceGame {
 
 
 
+
+
+
+
+
+		// ----- Camera -------------------------------------------------------------------------------------------------------------------------
+
+		[ClientRpc]
+		public void RpcEnablePlayerCams () {
+			//Transform players = players;
+
+			for (int i = 0; i < players.childCount; i++) {
+				Transform player = players.GetChild (i);
+				GamePlayer gamePlayer = player.GetComponent<GamePlayer> ();
+
+				int playerIndexDividedByTwo = Mathf.Abs (i / 2); // i[0,1]=0 i[2,3]=1
+				int lastTwoPlayersAreOne = Mathf.Clamp (Mathf.Abs (i + 2 / players.childCount), 0, 1); // (2/1)=1; (2/2)=1,(3/2)=1; (2/3)=0,(3/3)=1,(4/3)=1, (2/4)=0,(3/4)=0,(4/4)=1,(5/4)=1
+				int remainder = i % 2; // i[0,2]=0 i[1,3]=1
+				float threePlayers = (players.childCount == 3 && i == 1) ? 0.5f : 0f;
+
+				//int playersRemainder = players.childCount % 2f; // [1,3]=1 [2,4]=0
+				//int s = Mathf.Abs (players.childCount / 3f); // [1,2]=0, [3,4]=1
+				//int t = Mathf.Abs (players.childCount / 2f); // [1]=0, [2,3]=1, [4]=2
+
+				/*
+			new Rect (0f, 0f, 1f, 1f); // alles
+				
+			new Rect (0f, 0f, 0.5f, 1f); // links
+			new Rect (0.5f, 0f, 0.5f, 1f); // rechts
+
+			new Rect (0f, 0.5f, 0.5f, 0.5f); // oben links
+			new Rect (0.5f, 0f, 0.5f, 1f); // rechts
+			new Rect (0f, 0f, 0.5f, 0.5f); // unten links
+
+			new Rect (0f, 0.5f, 0.5f, 0.5f); // oben links
+			new Rect (0.5f, 0.5f, 0.5f, 0.5f); // oben rechts
+			new Rect (0f, 0f, 0.5f, 0.5f); // unten links
+			new Rect (0.5f, 0f, 0.5f, 0.5f); // unten rechts
+			*/
+
+				float x = remainder * 0.5f;
+				float y = 0.5f - (lastTwoPlayersAreOne * 0.5f);
+				float width = 0.5f * (3 - Mathf.Clamp (players.childCount, 1, 2));
+				float height = (1 - (playerIndexDividedByTwo * 0.5f)) + threePlayers;
+				Rect rect = new Rect (x, y, width, height);
+				Debug.LogWarning ("Platziere Kamera: " + rect);
+
+				gamePlayer.evaluationCam.rect = rect;
+				gamePlayer.evaluationCam.gameObject.SetActive (true);
+				//gamePlayer.cam.gameObject.SetActive (false);
+
+			}
+		}
+
+		[ClientRpc]
+		public void RpcDisablePlayerCams () {
+			//Transform players = players;
+
+			for (int i = 0; i < players.childCount; i++) {
+				Transform player = players.GetChild (i);
+				GamePlayer gamePlayer = player.GetComponent<GamePlayer> ();
+
+				gamePlayer.evaluationCam.gameObject.SetActive (false);
+
+			}
+		}
 
 	}
 

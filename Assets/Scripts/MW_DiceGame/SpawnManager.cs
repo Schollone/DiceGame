@@ -10,6 +10,7 @@ namespace MW_DiceGame {
 
 		public GamePlayer gamePlayer;
 		public GameObject spawnablePrefab;
+		public GameObject unspawnParticleEffectPrefab;
 		[SyncVar (hook = "OnReadyChange")]
 		public bool ready;
 		public int poolSize = 5;

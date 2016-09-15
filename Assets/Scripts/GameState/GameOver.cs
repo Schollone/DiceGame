@@ -9,6 +9,7 @@ public class GameOver : AbstractState {
 	public GameOver (Table table) {
 		Debug.Log ("GameOver");
 		this.table = table;
+		this.action = null;
 	}
 
 
@@ -16,7 +17,7 @@ public class GameOver : AbstractState {
 		
 	}
 
-	public override void Execute () {
+	public override void Execute (IAction action = null) {
 		
 	}
 

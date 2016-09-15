@@ -9,18 +9,14 @@ public class Preparation : AbstractState {
 	public Preparation (Table table) {
 		Debug.Log ("Preparation");
 		this.table = table;
+		this.action = null;
 	}
 
 	public override void OnEnter () {
-//		this.table.InitPlayers ();
 
-		if (table.players.childCount == 1) {
-			//Debug.Log ("Only Host is ready to fill up dice cups");
-			//table.StartGame ();
-		}
 	}
 
-	public override void Execute () {
+	public override void Execute (IAction action = null) {
 
 	}
 
@@ -30,7 +26,7 @@ public class Preparation : AbstractState {
 
 
 	public override void StartGame () {
-		table.SetGameState (new Bidding (table, action));
+		table.SetGameState (table.bidding);
 	}
 
 }
