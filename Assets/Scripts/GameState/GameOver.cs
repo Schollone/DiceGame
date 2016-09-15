@@ -14,10 +14,10 @@ public class GameOver : AbstractState {
 
 
 	public override void OnEnter () {
-		
+		table.SendLockControlsEvent ();
 	}
 
-	public override void Execute (IAction action = null) {
+	public override void Execute () {
 		
 	}
 

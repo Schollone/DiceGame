@@ -3,13 +3,13 @@ using System.Collections;
 
 public interface IState {
 
-	//IAction GetActionStrategy ();
+	IAction GetActionStrategy ();
 
-	//void SetActionStrategy (IAction action);
+	void SetActionStrategy (IAction action);
 
 	void OnEnter ();
 
-	void Execute (IAction action = null);
+	void Execute ();
 
 	void OnExit ();
 

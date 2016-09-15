@@ -29,8 +29,9 @@ public class Bidding : AbstractState {
 		SetPlayerToBegin ();
 	}
 
-	public override void Execute (IAction action = null) {
+	public override void Execute () {
 		Debug.Log ("Execute");
+
 		if (action != null) {
 			action.ExecuteAction (table);
 		}

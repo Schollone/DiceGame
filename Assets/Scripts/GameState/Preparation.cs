@@ -16,7 +16,7 @@ public class Preparation : AbstractState {
 
 	}
 
-	public override void Execute (IAction action = null) {
+	public override void Execute () {
 
 	}
 

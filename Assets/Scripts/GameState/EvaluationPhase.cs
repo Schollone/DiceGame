@@ -24,11 +24,10 @@ public class EvaluationPhase : AbstractState {
 
 	}
 
-	public override void Execute (IAction action = null) {
+	public override void Execute () {
 		Debug.Log ("Execute");
-		base.Execute (action);
 
-		table.RpcEnablePlayerCams ();
+		//table.RpcEnablePlayerCams ();
 
 		if (action != null) {
 			action.ExecuteAction (table);

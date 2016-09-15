@@ -102,7 +102,7 @@ namespace MW_DiceGame {
 		[Command]
 		public void CmdDecreaseDiceFromPlayer () {
 			if (availableDices > 0) {
-				Invoke ("DecreaseDice", 4f);
+				DecreaseDice ();
 			}
 		}
 
@@ -113,7 +113,8 @@ namespace MW_DiceGame {
 			GameObject go = spawnManager.container.transform.GetChild (0).gameObject;
 
 			//spawnManager.unspawnParticleEffectPrefab.GetComponent<ParticleSystem> ().startColor = gamePlayer.color.GetColor ();
-			PlayDiceSmoke (go.transform.position);
+			Debug.LogWarning ("Server PlaySmoke");
+			RpcPlayDiceSmoke (go.transform.position);
 
 			spawnManager.UnSpawnHandler (go);
 			NetworkServer.UnSpawn (go);
@@ -128,7 +129,13 @@ namespace MW_DiceGame {
 			}
 		}
 
+		[ClientRpc]
+		void RpcPlayDiceSmoke (Vector3 startposition) {
+			PlayDiceSmoke (startposition);
+		}
+
 		void PlayDiceSmoke (Vector3 startPosition) {
+			Debug.LogWarning ("Client PlaySmoke");
 			GameObject diceSmoke = GameObject.Find ("DiceSmoke");
 			if (diceSmoke == null) {
 				diceSmoke = (GameObject)GameObject.Instantiate (spawnManager.unspawnParticleEffectPrefab, startPosition, Quaternion.Euler (new Vector3 (-90f, 0f, 0f)));

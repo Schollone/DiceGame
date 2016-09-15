@@ -57,6 +57,8 @@ namespace MW_DiceGame {
 		[HideInInspector]
 		public GameOver gameOver;
 
+		GamePlayer[] enabledPlayerCams;
+
 		// ----- Callbacks --------------------------------------------------------------------------------------------------------------------------
 
 		void Awake () {
@@ -234,8 +236,8 @@ namespace MW_DiceGame {
 			Debug.Log ("Server erhält Anfrage für ein neues Gebot: " + msg.bid);
 
 			if (MayAct (msg)) {
-				//gameState.SetActionStrategy (new EnterBid (msg.bid));
-				Execute (new EnterBid (msg.bid));
+				gameState.SetActionStrategy (new EnterBid (msg.bid));
+				Execute ();
 				NextPlayer ();
 			}
 		}
@@ -247,9 +249,10 @@ namespace MW_DiceGame {
 
 			if (MayAct (msg)) {
 				if (currentBid.Exists ()) {
-					//gameState.SetActionStrategy (new CallOutBluff ());
+					
 					EnterEvaluationPhase ();
-					Execute (new CallOutBluff ());
+					gameState.SetActionStrategy (new CallOutBluff ());
+					//Execute (new CallOutBluff ());
 				}
 			}
 		}
@@ -261,9 +264,10 @@ namespace MW_DiceGame {
 
 			if (MayAct (msg)) {
 				if (currentBid.Exists ()) {
-					//gameState.SetActionStrategy (new DeclareBidSpotOn ());
+					
 					EnterEvaluationPhase ();
-					Execute (new DeclareBidSpotOn ());
+					gameState.SetActionStrategy (new DeclareBidSpotOn ());
+					//Execute (new DeclareBidSpotOn ());
 				}
 			}
 		}
@@ -296,8 +300,8 @@ namespace MW_DiceGame {
 		}
 
 		[Server]
-		public void Execute (IAction action) {
-			this.gameState.Execute (action);
+		public void Execute () {
+			this.gameState.Execute ();
 		}
 
 		[Server]
@@ -332,7 +336,7 @@ namespace MW_DiceGame {
 
 		public void ExecuteState () {
 			if (isServer) {
-				Execute (null);
+				Execute ();
 			}
 		}
 
@@ -509,9 +513,16 @@ namespace MW_DiceGame {
 
 		// ----- Camera -------------------------------------------------------------------------------------------------------------------------
 
+		public void EnablePlayerCams () {
+			if (isServer) {
+				RpcEnablePlayerCams ();
+			}
+		}
+
 		[ClientRpc]
-		public void RpcEnablePlayerCams () {
+		void RpcEnablePlayerCams () {
 			//Transform players = players;
+			enabledPlayerCams = new GamePlayer[players.childCount];
 
 			for (int i = 0; i < players.childCount; i++) {
 				Transform player = players.GetChild (i);
@@ -542,27 +553,32 @@ namespace MW_DiceGame {
 			new Rect (0.5f, 0f, 0.5f, 0.5f); // unten rechts
 			*/
 
-				float x = remainder * 0.5f;
-				float y = 0.5f - (lastTwoPlayersAreOne * 0.5f);
-				float width = 0.5f * (3 - Mathf.Clamp (players.childCount, 1, 2));
-				float height = (1 - (playerIndexDividedByTwo * 0.5f)) + threePlayers;
+				float x = remainder * 0.44f;
+				float y = 0.445f - (lastTwoPlayersAreOne * 0.445f);
+				float width = 0.44f * (3 - Mathf.Clamp (players.childCount, 1, 2));
+				float height = (0.89f - (playerIndexDividedByTwo * 0.445f)) + threePlayers;
 				Rect rect = new Rect (x, y, width, height);
 				Debug.LogWarning ("Platziere Kamera: " + rect);
 
 				gamePlayer.evaluationCam.rect = rect;
 				gamePlayer.evaluationCam.gameObject.SetActive (true);
 				//gamePlayer.cam.gameObject.SetActive (false);
+				enabledPlayerCams [i] = gamePlayer;
+			}
+		}
 
+		public void DisablePlayerCams () {
+			if (isServer) {
+				RpcDisablePlayerCams ();
 			}
 		}
 
 		[ClientRpc]
-		public void RpcDisablePlayerCams () {
+		void RpcDisablePlayerCams () {
 			//Transform players = players;
 
-			for (int i = 0; i < players.childCount; i++) {
-				Transform player = players.GetChild (i);
-				GamePlayer gamePlayer = player.GetComponent<GamePlayer> ();
+			for (int i = 0; i < enabledPlayerCams.Length; i++) {
+				GamePlayer gamePlayer = enabledPlayerCams [i];
 
 				gamePlayer.evaluationCam.gameObject.SetActive (false);
 
