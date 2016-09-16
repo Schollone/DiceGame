@@ -10,8 +10,12 @@ public class AnimationMethods : MonoBehaviour {
 	}*/
 
 	public void StartEvalation () {
-		Debug.LogWarning ("StartEvaluation!!!!!!!!!!!!!!!!!!!!!!!!!! " + Time.fixedTime);
-		Table.singleton.ExecuteState ();
+		GamePlayer gp = transform.parent.GetComponent<GamePlayer> ();
+
+		if (gp.isLocalPlayer) {
+			Debug.LogWarning ("StartEvaluation!!!!!!!!!!!!!!!!!!!!!!!!!! " + Time.fixedTime);
+			Table.singleton.ExecuteState ();
+		}
 	}
 
 	/*public void StopEvalation () {
@@ -21,10 +25,18 @@ public class AnimationMethods : MonoBehaviour {
 
 
 	public void EnableEvaluationCams () {
-		Table.singleton.EnablePlayerCams ();
+		GamePlayer gp = transform.parent.GetComponent<GamePlayer> ();
+
+		if (gp.isLocalPlayer) {
+			Table.singleton.EnablePlayerCams ();
+		}
 	}
 
 	public void DisableEvaluationCams () {
-		Table.singleton.DisablePlayerCams ();
+		GamePlayer gp = transform.parent.GetComponent<GamePlayer> ();
+
+		if (gp.isLocalPlayer) {
+			Table.singleton.DisablePlayerCams ();
+		}
 	}
 }

@@ -242,7 +242,8 @@ namespace MW_DiceGame {
 			lookBtn.SetActive (false);
 			hideBtn.SetActive (true);
 			//hideBtn.GetComponent<Button> ().interactable = true;
-			CmdStartAnimationLookUp ();
+			//CmdStartAnimationLookUp ();
+			anim.SetBool ("looking", true);
 			//}
 		}
 
@@ -265,7 +266,8 @@ namespace MW_DiceGame {
 			lookBtn.SetActive (true);
 			//lookBtn.GetComponent<Button> ().interactable = true;
 			hideBtn.SetActive (false);
-			CmdStartAnimationHide ();
+			//CmdStartAnimationHide ();
+			anim.SetBool ("looking", false);
 		}
 
 		[Command]

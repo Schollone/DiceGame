@@ -433,10 +433,10 @@ namespace MW_DiceGame {
 				var diceCup = player.GetComponent<DiceCup> ();
 				Debug.Log ("RpcLookUpAllDices");
 				//diceCup.EvaluateDices ();
-				//if (diceCup.isLocalPlayer) {
-				Debug.Log ("isLocalPlayer = " + diceCup.isLocalPlayer);
-				diceCup.EvaluateDices ();
-				//}
+				if (diceCup.isLocalPlayer) {
+					Debug.Log ("isLocalPlayer = " + diceCup.isLocalPlayer);
+					diceCup.EvaluateDices ();
+				}
 
 				// send to client to look up the dices
 				//if (EventLookUpAllDices != null) {
