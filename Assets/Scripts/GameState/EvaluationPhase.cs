@@ -8,36 +8,24 @@ public class EvaluationPhase : AbstractState {
 	Table table;
 
 	public EvaluationPhase (Table table) {
-		Debug.Log ("EvaluationPhase");
 		this.table = table;
 		this.action = null;
 	}
 
 
 	public override void OnEnter () {
-		Debug.Log ("OnEnter - CountDicesOnTable");
 		CountDicesOnTable (table.players);
 
-
 		table.RpcLookUpAllDices ();
-		//Debug.Log ("OnEnter - LookUpAllDices");
-
 	}
 
 	public override void Execute () {
-		Debug.Log ("Execute");
-
-		//table.RpcEnablePlayerCams ();
-
 		if (action != null) {
 			action.ExecuteAction (table);
 		}
 	}
 
 	public override void OnExit () {
-		Debug.Log ("OnExit");
-		//table.RpcDisablePlayerCams ();
-		//action.ExecuteAction (table);
 	}
 
 	public override void EnterBidding () {
@@ -56,27 +44,39 @@ public class EvaluationPhase : AbstractState {
 	void CountDicesOnTable (Transform players) {
 		table.dieFaceMap.Clear ();
 
+		loopPlayers (players);
+	}
+
+	void loopPlayers (Transform players) {
 		for (int i = 0; i < players.childCount; i++) {
 			Transform player = players.GetChild (i);
 			SpawnManager spawnManager = player.GetComponent<SpawnManager> ();
-			DieFaces[] dieFaces = spawnManager.GetDieFacesFromPlayer ();
-			for (int j = 0; j < dieFaces.Length; j++) {
+			loopDieFaces (spawnManager);
+		}
+	}
 
-				DieFaces dieFace = dieFaces [j];
-				int value = 1;
+	void loopDieFaces (SpawnManager spawnManager) {
+		DieFaces[] dieFaces = spawnManager.GetDieFacesFromPlayer ();
 
-				if (table.dieFaceMap.ContainsKey (dieFace)) {
-					value = table.dieFaceMap [dieFace];
-					value++;
-					table.dieFaceMap [dieFace] = value;
-					//dieFaceMap.Add (dieFace, value + 1);
-				} else {
-					table.dieFaceMap.Add (dieFace, value);
-				}
+		for (int j = 0; j < dieFaces.Length; j++) {
+			DieFaces dieFace = dieFaces [j];
 
+			if (table.dieFaceMap.ContainsKey (dieFace)) {
+				IncreaseDieFaceCount (dieFace);
+			} else {
+				SetDieFaceCount (dieFace, 1);
 			}
 
 		}
 	}
 
+	void IncreaseDieFaceCount (DieFaces dieFace) {
+		int value = table.dieFaceMap [dieFace];
+		value++;
+		table.dieFaceMap [dieFace] = value;
+	}
+
+	void SetDieFaceCount (DieFaces dieFace, int count) {
+		table.dieFaceMap.Add (dieFace, count);
+	}
 }

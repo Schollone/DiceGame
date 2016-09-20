@@ -16,24 +16,18 @@ public class EnterBid : IAction {
 	public void ExecuteAction (Table table) {
 		if (table.currentBid.Exists ()) {
 			if (table.currentBid.CanBeReplacedWith (bid)) {
-				table.currentBid = bid;
-				table.ChangeBidOnClients (bid);
-				//SendToClients ();
+				UpdateBid (table, bid);
 			}
 		} else {
-			table.currentBid = bid;
-			table.ChangeBidOnClients (bid);
-			//SendToClients ();
+			UpdateBid (table, bid);
 		}
 	}
 
 	#endregion
 
-	void SendToClients () {
-		Debug.Log ("Bestätige den Clients das neue Gebot");
-		/*ActionMessage msg = new ActionMessage ();
-		msg.bid = bid;
-		NetworkServer.SendToAll (ActionMsg.EnterBid, msg);*/
+	void UpdateBid (Table table, Bid bid) {
+		table.currentBid = bid;
+		table.ChangeBidOnClients (bid);
 	}
 
 }

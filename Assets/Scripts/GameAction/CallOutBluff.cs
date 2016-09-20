@@ -9,8 +9,6 @@ public class CallOutBluff : IAction {
 	#region IAction implementation
 
 	public void ExecuteAction (Table table) {
-		Debug.Log ("OnEnter - Evaluate CallOutBluff");
-
 		int value = 0;
 		table.dieFaceMap.TryGetValue (table.currentBid.dieFace, out value);
 		Bid realBidOnTable = new Bid (table.currentBid.dieFace, value);
@@ -18,11 +16,11 @@ public class CallOutBluff : IAction {
 		Transform player;
 
 		if (table.currentBid.IsBluff (realBidOnTable)) {
-			Debug.Log ("Bluff: last player loses a dice.");
 			player = table.GetLastPlayer ();
+			Debug.Log ("Bluff: last player, " + player.GetComponent<GamePlayer> ().playerName + ", loses a dice.");
 		} else {
-			Debug.Log ("No Bluff: current player " + table.GetCurrentPlayer ().GetComponent<GamePlayer> ().playerName + " loses a dice.");
 			player = table.GetCurrentPlayer ();
+			Debug.Log ("No Bluff: current player " + player.GetComponent<GamePlayer> ().playerName + " loses a dice.");
 		}
 
 		DiceCup diceCup = player.GetComponent<DiceCup> ();

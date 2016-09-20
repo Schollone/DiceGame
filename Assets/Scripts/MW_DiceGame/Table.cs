@@ -29,14 +29,7 @@ namespace MW_DiceGame {
 		public event ControlbarButtonsDelegate EventLockControls;
 		[SyncEvent]
 		public event BidButtonsDelegate EventOnBidChanged;
-		[SyncEvent]
-		public event DiceHandlingDelegate EventLookUpAllDices;
 
-
-		[SyncVar (hook = "OnGameStateChange")]
-		public GameState theGameState;
-
-		//[SyncVar (hook = "OnBidChange")]
 		[SyncVar]
 		public Bid currentBid;
 
@@ -46,7 +39,6 @@ namespace MW_DiceGame {
 		IState gameState;
 		int playerIndex = 0;
 		[HideInInspector] public IDictionary<DieFaces, int> dieFaceMap;
-		int clientsReadyCount = 0;
 
 		[HideInInspector]
 		public Preparation preparation;
@@ -78,7 +70,6 @@ namespace MW_DiceGame {
 
 		public override void OnStartServer () {
 			base.OnStartServer ();
-			Debug.Log ("OnStartServer");
 
 			NetworkServer.RegisterHandler (ActionMsg.ClientReady, OnClientReady);
 			NetworkServer.RegisterHandler (ActionMsg.EnterBid, OnEnterBid);
@@ -88,32 +79,10 @@ namespace MW_DiceGame {
 
 		public override void OnStartClient () {
 			base.OnStartClient ();
-			Debug.Log ("OnStartClient");
-
-			/*if (isServer) {
-				return;
-			}*/
-
 			InitPlayers ();
-			//this.currentBid = currentBid;
-			//if (EventOnBidChanged != null) {
-			//EventOnBidChanged (BidAlreadyExists ());
-			//}
 		}
 
 		void Start () {
-			Debug.Log ("Start");
-			//if (isServer) {
-			//SetGameState (new Preparation (this));
-			//}
-
-			/*for (int i = 0; i < players.childCount; i++) {
-				var player = players.GetChild (i);
-				bool ready = player.GetComponent<SpawnManager> ().ready;
-				if (!ready) {
-					return;
-				}
-			}*/
 			if (isServer) {
 				Invoke ("StartGame", 3f);
 			}
@@ -125,42 +94,8 @@ namespace MW_DiceGame {
 
 		// ----- Hooks --------------------------------------------------------------------------------------------------------------------------
 
-		void OnGameStateChange (GameState newState) {
-			//Debug.Log ("Setze GameState auf " + newState);
-			this.theGameState = newState;
-
-			/*if (newState.Equals (GameState.Preparation) || newState.Equals (GameState.GameOver)) {
-				return;
-			}
-
-			var gamePlayer = GetLocalPlayer ();
-			DiceCup diceCup = gamePlayer.GetComponent<DiceCup> ();
-
-			if (newState.Equals (GameState.Bidding)) {
-				
-				diceCup.HideDices ();
-				SendUnlockControlsEvent ();
-
-			} else {
-				diceCup.HideDices ();
-				SendLockControlsEvent ();
-			}*/
-		}
-
-		/*GamePlayer GetLocalPlayer () {
-			for (int i = 0; i < players.childCount; i++) {
-				var gamePlayer = players.GetChild (i).GetComponent<GamePlayer> ();
-				if (gamePlayer.isLocalPlayer) {
-					return gamePlayer;
-				}
-			}
-
-			return null;
-		}*/
-
 		[Server]
 		public void SendUnlockControlsEvent () {
-			Debug.Log ("Aktiviere Look und Hide Buttons");
 			if (EventUnlockControls != null) {
 				EventUnlockControls ();
 			}
@@ -168,23 +103,13 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void SendLockControlsEvent () {
-			Debug.LogWarning ("Deaktiviere alle Buttons");
 			if (EventLockControls != null) {
 				EventLockControls ();
 			}
 		}
 
-		/*void OnBidChange (Bid bid) {
-			this.currentBid = bid;
-				
-			if (isServer) {
-				ChangeBidOnClients (bid);
-			}
-		}*/
-
 		[Server]
 		public void ChangeBidOnClients (Bid bid) {
-			Debug.LogWarning ("Informiere Clients, dass sich das Gebot geändert hat.");
 			if (EventOnBidChanged != null) {
 				EventOnBidChanged (bid);
 			}
@@ -198,37 +123,7 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void OnClientReady (NetworkMessage netMsg) {
-			var msg = netMsg.ReadMessage<ActionMessage> ();
-
-			//CheckIfClientsReady (msg);
 		}
-
-		/*void CheckIfClientsReady (ActionMessage msg) {
-			for (int i = 0; i < players.childCount; i++) {
-				var player = players.GetChild (i);
-				GamePlayer gamePlayer = player.GetComponent<GamePlayer> ();
-				int connectionId = gamePlayer.connectionToClient.connectionId;
-
-				if (connectionId == msg.connectionId) {
-					this.clientsReadyCount++;
-					break;
-				}
-			}
-
-			StartGameIfAllClientsAreReady ();
-		}
-
-		public void ServerIsReady () {
-			this.clientsReadyCount++;
-
-			StartGameIfAllClientsAreReady ();
-		}
-
-		void StartGameIfAllClientsAreReady () {
-			if (this.clientsReadyCount == players.childCount) {
-				StartGame ();
-			}
-		}*/
 
 		[Server]
 		void OnEnterBid (NetworkMessage netMsg) {
@@ -252,7 +147,6 @@ namespace MW_DiceGame {
 					
 					EnterEvaluationPhase ();
 					gameState.SetActionStrategy (new CallOutBluff ());
-					//Execute (new CallOutBluff ());
 				}
 			}
 		}
@@ -267,7 +161,6 @@ namespace MW_DiceGame {
 					
 					EnterEvaluationPhase ();
 					gameState.SetActionStrategy (new DeclareBidSpotOn ());
-					//Execute (new DeclareBidSpotOn ());
 				}
 			}
 		}
@@ -292,10 +185,6 @@ namespace MW_DiceGame {
 			}
 
 			this.gameState = gameState;
-
-			string stateName = gameState.GetType ().ToString ();
-			this.theGameState = (GameState)Enum.Parse (typeof(GameState), stateName);
-
 			this.gameState.OnEnter ();
 		}
 
@@ -313,7 +202,6 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void NextPlayer () {
-			Debug.LogWarning ("NextPlayer");
 			this.gameState.NextPlayer ();
 		}
 
@@ -343,7 +231,6 @@ namespace MW_DiceGame {
 		public void FinishRound () {
 			if (isServer) {
 				EnterBidding ();
-				//NextPlayer ();
 			}
 		}
 
@@ -354,7 +241,6 @@ namespace MW_DiceGame {
 		// ----- Player -------------------------------------------------------------------------------------------------------------------------
 
 		void InitPlayers () {
-			//Debug.Log ("InitPlayers");
 			players = GameObject.Find ("Player").transform;
 		}
 
@@ -387,13 +273,11 @@ namespace MW_DiceGame {
 		void FinishTurnForPlayer () {
 			Transform player = GetCurrentPlayer ();
 			var gamePlayer = player.GetComponent<GamePlayer> ();
-			Debug.Log ("FinishTurnForPlayer " + gamePlayer.playerName);
 			gamePlayer.CmdItIsYourTurn (false);
 		}
 
 		[Server]
 		void UpdatePlayerIndex () {
-			Debug.Log ("UpdatePlayerIndex");
 			if (playerIndex + 1 < players.childCount) {
 				playerIndex++;
 			} else {
@@ -405,7 +289,6 @@ namespace MW_DiceGame {
 		void BeginTurnForNextPlayer () {
 			var player = GetCurrentPlayer ();
 			var gamePlayer = player.GetComponent<GamePlayer> ();
-			Debug.Log ("BeginTurnForNextPlayer " + gamePlayer.playerName);
 			gamePlayer.CmdItIsYourTurn (true);
 		}
 
@@ -431,18 +314,10 @@ namespace MW_DiceGame {
 			for (int i = 0; i < players.childCount; i++) {
 				var player = players.GetChild (i);
 				var diceCup = player.GetComponent<DiceCup> ();
-				Debug.Log ("RpcLookUpAllDices");
-				//diceCup.EvaluateDices ();
+
 				if (diceCup.isLocalPlayer) {
-					Debug.Log ("isLocalPlayer = " + diceCup.isLocalPlayer);
 					diceCup.EvaluateDices ();
 				}
-
-				// send to client to look up the dices
-				//if (EventLookUpAllDices != null) {
-				//Debug.Log ("Send LookUpAllDices");
-				//EventLookUpAllDices ();
-				//}
 			}
 		}
 
@@ -497,11 +372,8 @@ namespace MW_DiceGame {
 			GamePlayer gamePlayer = currentPlayer.GetComponent<GamePlayer> ();
 			int connectionId = gamePlayer.connectionToClient.connectionId;
 
-			if (connectionId == msg.connectionId) {
-				return gamePlayer;
-			}
-
-			return null;
+			Debug.Log (connectionId + " == " + msg.connectionId);
+			return gamePlayer;
 		}
 
 
@@ -521,7 +393,6 @@ namespace MW_DiceGame {
 
 		[ClientRpc]
 		void RpcEnablePlayerCams () {
-			//Transform players = players;
 			enabledPlayerCams = new GamePlayer[players.childCount];
 
 			for (int i = 0; i < players.childCount; i++) {
@@ -533,36 +404,14 @@ namespace MW_DiceGame {
 				int remainder = i % 2; // i[0,2]=0 i[1,3]=1
 				float threePlayers = (players.childCount == 3 && i == 1) ? 0.5f : 0f;
 
-				//int playersRemainder = players.childCount % 2f; // [1,3]=1 [2,4]=0
-				//int s = Mathf.Abs (players.childCount / 3f); // [1,2]=0, [3,4]=1
-				//int t = Mathf.Abs (players.childCount / 2f); // [1]=0, [2,3]=1, [4]=2
-
-				/*
-			new Rect (0f, 0f, 1f, 1f); // alles
-				
-			new Rect (0f, 0f, 0.5f, 1f); // links
-			new Rect (0.5f, 0f, 0.5f, 1f); // rechts
-
-			new Rect (0f, 0.5f, 0.5f, 0.5f); // oben links
-			new Rect (0.5f, 0f, 0.5f, 1f); // rechts
-			new Rect (0f, 0f, 0.5f, 0.5f); // unten links
-
-			new Rect (0f, 0.5f, 0.5f, 0.5f); // oben links
-			new Rect (0.5f, 0.5f, 0.5f, 0.5f); // oben rechts
-			new Rect (0f, 0f, 0.5f, 0.5f); // unten links
-			new Rect (0.5f, 0f, 0.5f, 0.5f); // unten rechts
-			*/
-
 				float x = remainder * 0.44f;
 				float y = 0.445f - (lastTwoPlayersAreOne * 0.445f);
 				float width = 0.44f * (3 - Mathf.Clamp (players.childCount, 1, 2));
 				float height = (0.89f - (playerIndexDividedByTwo * 0.445f)) + threePlayers;
 				Rect rect = new Rect (x, y, width, height);
-				Debug.LogWarning ("Platziere Kamera: " + rect);
 
 				gamePlayer.evaluationCam.rect = rect;
 				gamePlayer.evaluationCam.gameObject.SetActive (true);
-				//gamePlayer.cam.gameObject.SetActive (false);
 				enabledPlayerCams [i] = gamePlayer;
 			}
 		}
@@ -575,13 +424,10 @@ namespace MW_DiceGame {
 
 		[ClientRpc]
 		void RpcDisablePlayerCams () {
-			//Transform players = players;
 
 			for (int i = 0; i < enabledPlayerCams.Length; i++) {
 				GamePlayer gamePlayer = enabledPlayerCams [i];
-
 				gamePlayer.evaluationCam.gameObject.SetActive (false);
-
 			}
 		}
 

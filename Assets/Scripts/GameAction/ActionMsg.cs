@@ -9,6 +9,5 @@ public class ActionMsg {
 	public static short DeclareBidSpotOn = MsgType.Highest + 5;
 	public static short UnlockControlButtons = MsgType.Highest + 6;
 	public static short LockControlButtons = MsgType.Highest + 7;
-	//public static short LockControlButtons = MsgType.Highest + 8;
 
 }

@@ -46,9 +46,6 @@ namespace MW_DiceGame {
 
 		void OnDieFaceChange (DieFaces dieFace) {
 			this.dieFace = dieFace;
-
-			//Debug.LogWarning ("Dice - OnDieFaceChange: " + dieFace);
-
 			diceThrown = false;
 
 			GameObject diceCup = ClientScene.FindLocalObject (diceCupId);
@@ -76,7 +73,6 @@ namespace MW_DiceGame {
 				}
 
 				int velocity = Mathf.RoundToInt (rigid.velocity.magnitude * 100);
-				//Debug.Log(velocity + " - " + rigid.velocity.magnitude);
 				if (velocity == 0) {
 					dieFace = CalculateDieFace ();
 					diceThrown = true;

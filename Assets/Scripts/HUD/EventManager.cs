@@ -11,8 +11,6 @@ public class EventManager : MonoBehaviour {
 
 	public static event ClickAction OnLook;
 	public static event ClickAction OnHide;
-	//public static event ClickAction OnDeclareSpotOn;
-	//public static event ClickAction OnCallOutBluff;
 
 	public void Look () {
 		if (OnLook != null) {
@@ -28,24 +26,15 @@ public class EventManager : MonoBehaviour {
 
 	public void DeclareBidSpotOn () {
 		SendAction (ActionMsg.DeclareBidSpotOn);
-		//SendDeclareBidSpotOnAction ();
-		//if (OnDeclareSpotOn != null) {
-		//	OnDeclareSpotOn ();
-		//}
 	}
 
 	public void CallOutBluff () {
 		SendAction (ActionMsg.CallOutBluff);
-		//SendCallOutBluffAction ();
-		//if (OnCallOutBluff != null) {
-		//	OnCallOutBluff ();
-		//}
 	}
 
 	public void OpenPauseMenu () {
 		var lobby = LobbyManager.singleton as LobbyManager;
 		lobby.pausePanel.gameObject.SetActive (true);
-		//pausemenu.GetComponent<Canvas> ().enabled = true;
 	}
 
 	public void SendAction (short action) {

@@ -11,7 +11,7 @@ namespace MW_DiceGame {
 		Fourth
 	}
 
-	static class SlotMethods {
+	public static class SlotMethods {
 		public static int GetIndex (this Slots slot) {
 			return (int)slot;
 		}

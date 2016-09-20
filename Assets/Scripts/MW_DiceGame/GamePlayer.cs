@@ -39,7 +39,6 @@ namespace MW_DiceGame {
 
 		public override void OnStartClient () {
 			base.OnStartClient ();
-			//Debug.Log ("playerName=" + playerName);
 			PutInContainer ("Player", gameObject);
 			gameObject.name = "Player" + playerName;
 
@@ -53,8 +52,6 @@ namespace MW_DiceGame {
 			string path = "Player/Cowboy_" + color.ToString ();
 			Material mat = Resources.Load<Material> (path);
 			cowboyRenderer.material = mat;
-
-			//OnIsMyTurn (isMyTurn);
 		}
 
 		public override void OnStartLocalPlayer () {
@@ -64,8 +61,6 @@ namespace MW_DiceGame {
 		}
 
 		void Start () {
-			Debug.Log ("Start GamePlayer - Client active: " + NetworkClient.active + " Server active: " + NetworkServer.active);
-
 			Table.singleton.EventUnlockControls += OnUnlockControls;
 			Table.singleton.EventLockControls += OnLockControls;
 			Table.singleton.EventOnBidChanged += OnBidChanged;
@@ -79,11 +74,6 @@ namespace MW_DiceGame {
 			child.transform.SetParent (container.transform);
 		}
 
-		/*[Command]
-		public void CmdEliminatePlayer () {
-			RpcEliminatePlayer ();
-		}*/
-
 		[ClientRpc]
 		public void RpcEliminatePlayer (NetworkInstanceId id) {
 			if (netId.Equals (id)) {
@@ -92,19 +82,14 @@ namespace MW_DiceGame {
 					GetComponent<DiceCup> ().Eliminated ();
 				}
 			}
-
 		}
-
 
 		public override string ToString () {
 			return string.Format ("[GamePlayer: playerName={0}, color={1}, slot={2}, isMyTurn={3}]", playerName, color, slotId, isMyTurn);
 		}
 
-
 		[Command]
 		public void CmdItIsYourTurn (bool isMyTurn) {
-			//Debug.Log ("CmdItIsYourTurn: " + isMyTurn);
-
 			if (isMyTurn) {
 				Debug.Log (playerName + " ist an der Reihe!");
 			} else {
@@ -123,44 +108,33 @@ namespace MW_DiceGame {
 
 
 		void OnUnlockControls () {
-			//if (isLocalPlayer) {
-			Debug.Log ("Aktiviere Look und Hide Buttons");
 			if (EventUnlockControls != null) {
 				EventUnlockControls (isMyTurn, Table.singleton.currentBid.Exists ());
 			}
-			//}
 		}
 
 		void OnLockControls () {
-			//if (isLocalPlayer) {
-			Debug.Log ("Deaktiviere alle Buttons");
 			if (EventLockControls != null) {
 				EventLockControls (isMyTurn, Table.singleton.currentBid.Exists ());
 			}
-			//}
 		}
 
 		void OnBidChanged (Bid newBid) {
-			//if (isLocalPlayer) {
-			Debug.Log ("Neues Gebot vom Server vekommen: " + newBid);
 			Table.singleton.currentBid = newBid;
 
 			if (EventOnBidChanged != null) {
 				EventOnBidChanged (isMyTurn, Table.singleton.currentBid.Exists ());
 			}
-			//}
 		}
 
 		public void OnIsMyTurn (bool isMyTurn) {
 			this.isMyTurn = isMyTurn;
 
 			if (isLocalPlayer) {
-				Debug.Log ("OnIsMyTurn - ItIsMyTurn: " + isMyTurn);
 				if (ItIsMyTurnEvent != null) {
 					ItIsMyTurnEvent (isMyTurn, Table.singleton.currentBid.Exists ());
 				}
 			}
-
 		}
 
 		void OnDestroy () {

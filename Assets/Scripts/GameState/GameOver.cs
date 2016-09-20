@@ -18,11 +18,9 @@ public class GameOver : AbstractState {
 	}
 
 	public override void Execute () {
-		
 	}
 
 	public override void OnExit () {
-		
 	}
 
 }

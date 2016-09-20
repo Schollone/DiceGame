@@ -15,7 +15,7 @@ namespace MW_DiceGame {
 		Empty
 	}
 
-	static class ColorMethods {
+	public static class ColorMethods {
 		public static Color visibleDarkBrownColor = new Color (131.0f / 255.0f, 67.0f / 255.0f, 32.0f / 255.0f, 1f);
 		public static Color transparentBlackColor = new Color (0f, 0f, 0f, 0.5f);
 
@@ -35,8 +35,10 @@ namespace MW_DiceGame {
 					return UnityEngine.Color.white;
 				case Colors.Yellow:
 					return UnityEngine.Color.yellow;
+				case Colors.Empty:
+					return new Color (1f, 1f, 1f, 0f);
 				default:
-					return UnityEngine.Color.grey;
+					return UnityEngine.Color.clear;
 			}
 		}
 

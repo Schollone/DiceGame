@@ -13,17 +13,13 @@ public class Preparation : AbstractState {
 	}
 
 	public override void OnEnter () {
-
 	}
 
 	public override void Execute () {
-
 	}
 
 	public override void OnExit () {
-		
 	}
-
 
 	public override void StartGame () {
 		table.SetGameState (table.bidding);

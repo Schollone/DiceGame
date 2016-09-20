@@ -18,7 +18,6 @@ public class PlayerInfo : MonoBehaviour {
 	void Awake () {
 		GamePlayer.PlayerNameChangedEvent += OnPlayerNameChanged;
 		GamePlayer.ColorChangedEvent += OnColorChanged;
-		//GamePlayer.OnSlotChanged += OnSlotChanged;
 
 		DiceCup.AvailableDicesChangedEvent += OnAvailableDicesChanged;
 
@@ -26,14 +25,11 @@ public class PlayerInfo : MonoBehaviour {
 	}
 
 	void Start () {
-		//diceQuantityAsDieFace.enabled = true;
-		//dieFaceContainer.SetActive (true);
 	}
 
 	void OnPlayerNameChanged (Slots targetSlot, string newPlayerName) {
 		if (slot == targetSlot) {
 			playerNameText.text = newPlayerName;
-
 			ShowPlayerInfoSlot ();
 		}
 	}
@@ -42,7 +38,6 @@ public class PlayerInfo : MonoBehaviour {
 		if (slot == targetSlot) {
 			this.color = newColor;
 			playerNameText.color = color.GetColor ();
-			Debug.LogWarning ("OnColorChanged: " + newColor + " -> " + (newColor.Equals (Colors.Black)));
 			if (newColor.Equals (Colors.Black)) {
 				playerNameOutline.effectColor = new Color (1f, 1f, 1f, 0.5f);
 			}
@@ -61,7 +56,6 @@ public class PlayerInfo : MonoBehaviour {
 				Sprite dieFace = color.GetDieFaceImage (dicesLeft);
 				diceQuantityAsDieFace.sprite = dieFace;
 			} else {
-				//diceQuantityAsDieFace.enabled = false;
 				dieFaceContainer.SetActive (false);
 			}
 

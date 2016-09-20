@@ -47,7 +47,6 @@ namespace MW_DiceGame {
 		}
 
 		BidResult CheckIfWithin (Bid realBidOnTable) {
-			Debug.Log ("this Quantity: " + this.quantity);
 			if (this.quantity > maxBidQuantity || this.quantity < minBidQuantity) {
 				Debug.LogError ("Bid is not in limits");
 				return BidResult.Null;
@@ -101,52 +100,22 @@ namespace MW_DiceGame {
 		public bool IsBluff (Bid realBidOnTable) {
 			BidResult bidResult = CheckIfWithin (realBidOnTable);
 
-			switch (bidResult) {
-				case BidResult.Bluff:
-				case BidResult.SpotOn:
-					{
-						return true;
-					}
-				default:
-					{
-						return false;
-					}
+			if (bidResult.Equals (BidResult.Bluff)) {
+				return true;
 			}
+			return false;
 		}
 
 		public bool IsSpotOn (Bid realBidOnTable) {
 			BidResult bidResult = CheckIfWithin (realBidOnTable);
 
-			switch (bidResult) {
-				case BidResult.SpotOn:
-					{
-						return true;
-					}
-				default:
-					{
-						return false;
-					}
+			if (bidResult.Equals (BidResult.SpotOn)) {
+				return true;
 			}
+
+			return false;
 		}
 
-		/*public int IComparable<Bid>.CompareTo (Bid other) {
-			if (other.Equals (null))
-				return 1;
-
-			if (this.quantity == other.quantity) {
-				if (this.dieFace.GetIndex () == other.dieFace.GetIndex ()) {
-					return 0;
-				} else if (this.dieFace.GetIndex () < other.dieFace.GetIndex ()) {
-					return -1;
-				} else {
-					return 1;
-				}
-			} else if (this.quantity < other.quantity) {
-				return -1;
-			} else {
-				return 1;
-			}
-		}*/
 	}
 
 }

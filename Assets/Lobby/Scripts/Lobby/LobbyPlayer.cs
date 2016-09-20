@@ -191,7 +191,7 @@ namespace Prototype.NetworkLobby {
 		}
 
 		void OnColorChanged (Colors newColor) {
-			Debug.LogFormat ("newColor={0}, color={1}", newColor, color);
+			//Debug.LogFormat ("newColor={0}, color={1}", newColor, color);
 			this.color = newColor;
 			LoadDieFace (newColor);
 		}
