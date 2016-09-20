@@ -44,18 +44,18 @@ public class EvaluationPhase : AbstractState {
 	void CountDicesOnTable (Transform players) {
 		table.dieFaceMap.Clear ();
 
-		loopPlayers (players);
+		LoopPlayers (players);
 	}
 
-	void loopPlayers (Transform players) {
+	void LoopPlayers (Transform players) {
 		for (int i = 0; i < players.childCount; i++) {
 			Transform player = players.GetChild (i);
 			SpawnManager spawnManager = player.GetComponent<SpawnManager> ();
-			loopDieFaces (spawnManager);
+			LoopDieFaces (spawnManager);
 		}
 	}
 
-	void loopDieFaces (SpawnManager spawnManager) {
+	void LoopDieFaces (SpawnManager spawnManager) {
 		DieFaces[] dieFaces = spawnManager.GetDieFacesFromPlayer ();
 
 		for (int j = 0; j < dieFaces.Length; j++) {

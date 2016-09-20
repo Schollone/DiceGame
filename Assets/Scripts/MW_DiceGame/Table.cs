@@ -96,23 +96,38 @@ namespace MW_DiceGame {
 
 		[Server]
 		public void SendUnlockControlsEvent () {
-			if (EventUnlockControls != null) {
-				EventUnlockControls ();
+			//Debug.Log ("SendUnlockControlsEvent");
+			for (int i = 0; i < players.childCount; i++) {
+				players.GetChild (i).GetComponent<GamePlayer> ().RpcUnlockControls ();
 			}
+
+			/*if (EventUnlockControls != null) {
+			Debug.Log ("Send Unlock Controls from Server");
+			EventUnlockControls ();
+			}*/
 		}
 
 		[Server]
 		public void SendLockControlsEvent () {
-			if (EventLockControls != null) {
-				EventLockControls ();
+			for (int i = 0; i < players.childCount; i++) {
+				players.GetChild (i).GetComponent<GamePlayer> ().RpcLockControls ();
 			}
+
+			/*if (EventLockControls != null) {
+				Debug.Log ("Send Lock Controls from Server");
+				EventLockControls ();
+			}*/
 		}
 
 		[Server]
 		public void ChangeBidOnClients (Bid bid) {
-			if (EventOnBidChanged != null) {
-				EventOnBidChanged (bid);
+			for (int i = 0; i < players.childCount; i++) {
+				players.GetChild (i).GetComponent<GamePlayer> ().RpcOnBidChanged (bid);
 			}
+
+			/*if (EventOnBidChanged != null) {
+				EventOnBidChanged (bid);
+			}*/
 		}
 
 
@@ -251,6 +266,15 @@ namespace MW_DiceGame {
 			}
 
 			return null;
+		}
+
+		[Server]
+		public Transform GetNextPlayer () {
+			int nextPlayerIndex = playerIndex + 1;
+			if (nextPlayerIndex >= players.childCount) {
+				nextPlayerIndex = 0;
+			}
+			return players.GetChild (nextPlayerIndex);
 		}
 
 		[Server]

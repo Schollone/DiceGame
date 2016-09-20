@@ -33,6 +33,7 @@ public class BidController : MonoBehaviour {
 	}
 
 	void Start () {
+		Debug.Log ("Reset Bid Display and Controls");
 		ResetBidDisplay ();
 		LockAllBidButtons ();
 	}
@@ -42,15 +43,19 @@ public class BidController : MonoBehaviour {
 
 
 	void OnUnlockControls (bool isMyTurn, bool bidAlreadyExists) {
+		Debug.Log ("BidController - Unlock Controls");
 		ResetBidDisplay ();
 		UpdateBidButtons ();
 	}
 
 	void OnLockControls (bool isMyTurn, bool bidAlreadyExists) {
+		Debug.Log ("BidController - Lock Controls");
 		LockAllBidButtons ();
 	}
 
 	void OnBidChanged (bool isMyTurn, bool bidAlreadyExists) {
+		Debug.Log ("BidController - Bid Changed");
+
 		Bid bid = Table.singleton.currentBid;
 
 		if (bid.Exists ()) {
@@ -66,6 +71,8 @@ public class BidController : MonoBehaviour {
 	}
 
 	void OnIsMyTurn (bool isMyTurn, bool bidAleadyExists) {
+		Debug.Log ("BidController - Is my turn " + isMyTurn);
+
 		this.isMyTurn = isMyTurn;
 		UpdateBidButtons ();
 	}

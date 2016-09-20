@@ -32,6 +32,7 @@ public class Bidding : AbstractState {
 	public override void OnExit () {
 		table.SendLockControlsEvent ();
 		table.RpcHideAllDices ();
+		EndPlayerHisTurn ();
 	}
 
 	public override void NextPlayer () {
@@ -49,6 +50,11 @@ public class Bidding : AbstractState {
 	void SetPlayerToBegin () {
 		var player = table.GetCurrentPlayer ();
 		player.GetComponent<GamePlayer> ().CmdItIsYourTurn (true);
+	}
+
+	void EndPlayerHisTurn () {
+		var player = table.GetCurrentPlayer ();
+		player.GetComponent<GamePlayer> ().CmdItIsYourTurn (false);
 	}
 
 	void ThrowDices (Transform players) {

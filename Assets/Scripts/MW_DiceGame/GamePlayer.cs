@@ -55,15 +55,19 @@ namespace MW_DiceGame {
 		}
 
 		public override void OnStartLocalPlayer () {
+			Debug.Log ("OnStartLocalPlayer GamePlayer");
 			base.OnStartLocalPlayer ();
 
 			cam.gameObject.SetActive (true);
+
+
 		}
 
 		void Start () {
-			Table.singleton.EventUnlockControls += OnUnlockControls;
-			Table.singleton.EventLockControls += OnLockControls;
-			Table.singleton.EventOnBidChanged += OnBidChanged;
+			Debug.Log ("Start GamePlayer");
+			//Table.singleton.EventUnlockControls += OnUnlockControls;
+			//Table.singleton.EventLockControls += OnLockControls;
+			//Table.singleton.EventOnBidChanged += OnBidChanged;
 		}
 
 		void PutInContainer (string containerName, GameObject child) {
@@ -105,11 +109,24 @@ namespace MW_DiceGame {
 
 
 
-
+		[ClientRpc]
+		public void RpcUnlockControls () {
+			if (isLocalPlayer) {
+				OnUnlockControls ();
+			}
+		}
 
 		void OnUnlockControls () {
 			if (EventUnlockControls != null) {
+				Debug.Log ("GamePlayer - Schicke Event zu BidController");
 				EventUnlockControls (isMyTurn, Table.singleton.currentBid.Exists ());
+			}
+		}
+
+		[ClientRpc]
+		public void RpcLockControls () {
+			if (isLocalPlayer) {
+				OnLockControls ();
 			}
 		}
 
@@ -117,6 +134,11 @@ namespace MW_DiceGame {
 			if (EventLockControls != null) {
 				EventLockControls (isMyTurn, Table.singleton.currentBid.Exists ());
 			}
+		}
+
+		[ClientRpc]
+		public void RpcOnBidChanged (Bid bid) {
+			OnBidChanged (bid);
 		}
 
 		void OnBidChanged (Bid newBid) {
@@ -127,7 +149,7 @@ namespace MW_DiceGame {
 			}
 		}
 
-		public void OnIsMyTurn (bool isMyTurn) {
+		void OnIsMyTurn (bool isMyTurn) {
 			this.isMyTurn = isMyTurn;
 
 			if (isLocalPlayer) {
@@ -138,9 +160,9 @@ namespace MW_DiceGame {
 		}
 
 		void OnDestroy () {
-			Table.singleton.EventUnlockControls -= OnUnlockControls;
-			Table.singleton.EventLockControls -= OnLockControls;
-			Table.singleton.EventOnBidChanged -= OnBidChanged;
+			//Table.singleton.EventUnlockControls -= OnUnlockControls;
+			//Table.singleton.EventLockControls -= OnLockControls;
+			//Table.singleton.EventOnBidChanged -= OnBidChanged;
 		}
 	}
 
