@@ -23,12 +23,20 @@ namespace MW_DiceGame {
 
 		public delegate void DiceHandlingDelegate ();
 
-		[SyncEvent]
+		public delegate void EventDisplayDelegate (string playerName, Colors color, string actionDescription);
+
+		public static event EventDisplayDelegate UpdateEventDisplayEvent;
+
+		public delegate void EventDisplayVisibilityDelegate (bool visibility);
+
+		public static event EventDisplayVisibilityDelegate EventDisplayVisibilityEvent;
+
+		/*[SyncEvent]
 		public event ControlbarButtonsDelegate EventUnlockControls;
 		[SyncEvent]
 		public event ControlbarButtonsDelegate EventLockControls;
 		[SyncEvent]
-		public event BidButtonsDelegate EventOnBidChanged;
+		public event BidButtonsDelegate EventOnBidChanged;*/
 
 		[SyncVar]
 		public Bid currentBid;
@@ -148,6 +156,8 @@ namespace MW_DiceGame {
 			if (MayAct (msg)) {
 				gameState.SetActionStrategy (new EnterBid (msg.bid));
 				Execute ();
+				var gp = GetCurrentPlayer ().GetComponent<GamePlayer> ();
+				RpcTellClientsCurrentAction (gp.playerName, gp.color, "entered a bid.");
 				NextPlayer ();
 			}
 		}
@@ -162,6 +172,8 @@ namespace MW_DiceGame {
 					
 					EnterEvaluationPhase ();
 					gameState.SetActionStrategy (new CallOutBluff ());
+					var gp = GetCurrentPlayer ().GetComponent<GamePlayer> ();
+					RpcTellClientsCurrentAction (gp.playerName, gp.color, "called out bluff.");
 				}
 			}
 		}
@@ -176,11 +188,28 @@ namespace MW_DiceGame {
 					
 					EnterEvaluationPhase ();
 					gameState.SetActionStrategy (new DeclareBidSpotOn ());
+					var gp = GetCurrentPlayer ().GetComponent<GamePlayer> ();
+					RpcTellClientsCurrentAction (gp.playerName, gp.color, "declared bid spot on.");
 				}
 			}
 		}
 
+		[ClientRpc]
+		public void RpcTellClientsCurrentAction (string playerName, Colors color, string actionDecription) {
+			//if (gamePlayer != null) {
+			UpdateEventDisplayEvent (playerName, color, actionDecription);
+			//}
+		}
 
+		[ClientRpc]
+		public void RpcTellClientsToDisableActionText () {
+			EventDisplayVisibilityEvent (false);
+		}
+
+		[ClientRpc]
+		public void RpcTellClientsToEnableActionText () {
+			EventDisplayVisibilityEvent (true);
+		}
 
 
 
@@ -278,7 +307,7 @@ namespace MW_DiceGame {
 		}
 
 		[Server]
-		public Transform GetLastPlayer () {
+		public Transform GetPrevPlayer () {
 			int lastPlayerIndex = playerIndex - 1;
 			if (lastPlayerIndex < 0) {
 				lastPlayerIndex = players.childCount - 1;

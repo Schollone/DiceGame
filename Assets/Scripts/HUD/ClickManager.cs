@@ -5,7 +5,7 @@ using System;
 using MW_DiceGame;
 using Prototype.NetworkLobby;
 
-public class EventManager : MonoBehaviour {
+public class ClickManager : MonoBehaviour {
 
 	public delegate void ClickAction ();
 

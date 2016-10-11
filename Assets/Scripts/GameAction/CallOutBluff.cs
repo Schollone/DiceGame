@@ -5,7 +5,7 @@ using System.Collections;
 using MW_DiceGame;
 
 public class CallOutBluff : IAction {
-		
+
 	#region IAction implementation
 
 	public void ExecuteAction (Table table) {
@@ -16,7 +16,7 @@ public class CallOutBluff : IAction {
 		Transform player;
 
 		if (table.currentBid.IsBluff (realBidOnTable)) {
-			player = table.GetLastPlayer ();
+			player = table.GetPrevPlayer ();
 			Debug.Log ("Bluff: last player, " + player.GetComponent<GamePlayer> ().playerName + ", loses a dice.");
 		} else {
 			player = table.GetCurrentPlayer ();

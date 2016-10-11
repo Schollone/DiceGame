@@ -59,8 +59,8 @@ namespace MW_DiceGame {
 				hideBtn.SetActive (false);
 			}
 
-			EventManager.OnLook += LookUpDices;
-			EventManager.OnHide += HideDices;
+			ClickManager.OnLook += LookUpDices;
+			ClickManager.OnHide += HideDices;
 		}
 
 		void Start () {
@@ -112,8 +112,14 @@ namespace MW_DiceGame {
 			if (availableDices <= 0) {
 				Debug.Log ("Eliminate Player");
 				gamePlayer.RpcEliminatePlayer (netId);
-				if (Table.singleton.players.childCount <= 1) {
+
+				if (Table.singleton.players.childCount > 1) {
+					var gp = ClientScene.FindLocalObject (netId).GetComponent<GamePlayer> ();
+					Table.singleton.RpcTellClientsCurrentAction (gp.playerName, gp.color, "is eliminated.");
+				} else {
 					Debug.Log ("GameOver");
+					var gp = Table.singleton.players.GetChild (0).GetComponent<GamePlayer> ();
+					Table.singleton.RpcTellClientsCurrentAction (gp.playerName, gp.color, "has won.");
 					Table.singleton.LeaveGame ();
 				}
 			}
@@ -239,12 +245,12 @@ namespace MW_DiceGame {
 		}
 
 		void OnDestroy () {
-			EventManager.OnLook -= LookUpDices;
-			EventManager.OnHide -= HideDices;
+			ClickManager.OnLook -= LookUpDices;
+			ClickManager.OnHide -= HideDices;
 		}
 
 		void OnGUI () {
-			GUIStyle s = new GUIStyle ();
+			/*GUIStyle s = new GUIStyle ();
 			s.fontSize = 30;
 			s.fontStyle = FontStyle.Bold;
 			s.normal.textColor = Color.white;
@@ -267,13 +273,13 @@ namespace MW_DiceGame {
 			GUI.Label (tmpRect, dices [3].ToString (), s);
 			tmpRect.x += 40;
 			GUI.Label (tmpRect, dices [4].ToString (), s);
-
+*/
 		}
 
 		public void UpdateDieFaceValueDisplay () {
 			rect1 = new Rect (250, gamePlayer.slotId.GetIndex () * 30 + 200, 320, 100);
 			rect2 = new Rect (20, gamePlayer.slotId.GetIndex () * 30 + 200, 300, 100);
-			dices = spawnManager.GetDiceValues ();
+			//dices = spawnManager.GetDiceValues ();
 		}
 
 	}

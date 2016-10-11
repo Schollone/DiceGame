@@ -15,6 +15,7 @@ public class Bidding : AbstractState {
 
 	public override void OnEnter () {
 		table.ResetBid ();
+		table.RpcTellClientsToDisableActionText ();
 
 		table.SendUnlockControlsEvent ();
 

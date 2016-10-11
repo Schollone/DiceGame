@@ -20,6 +20,7 @@ public class DeclareBidSpotOn : IAction {
 			DiceCup diceCup = player.GetComponent<DiceCup> ();
 			diceCup.CmdDecreaseDiceFromPlayer ();
 		}
+
 	}
 
 	#endregion

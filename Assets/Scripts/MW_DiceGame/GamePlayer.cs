@@ -37,6 +37,8 @@ namespace MW_DiceGame {
 		public static event ControlbarButtonsDelegate ItIsMyTurnEvent;
 
 
+
+
 		public override void OnStartClient () {
 			base.OnStartClient ();
 			PutInContainer ("Player", gameObject);
@@ -147,6 +149,17 @@ namespace MW_DiceGame {
 			if (EventOnBidChanged != null) {
 				EventOnBidChanged (isMyTurn, Table.singleton.currentBid.Exists ());
 			}
+
+			/*if (UpdateEventDisplayEvent != null) {
+				GameObject player =	ClientScene.FindLocalObject (Table.singleton.currentBid.ownerId);
+				Debug.Log ("OnBidChanged " + player);
+
+				if (player) {
+					GamePlayer gp = player.GetComponent<GamePlayer> ();
+
+					UpdateEventDisplayEvent (gp.playerName, gp.color.GetColor (), "entered a bid.");
+				}
+			}*/
 		}
 
 		void OnIsMyTurn (bool isMyTurn) {
